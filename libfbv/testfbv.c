@@ -9,7 +9,23 @@ void message_received(FBVMessage msg) {
   printf("RX: ");
   switch (msg.msgType) {
   case FBV_SET_LED:
-    printf("SET LED");
+    printf("SET LED 0x%x to %s", msg.params[0], msg.params[1] ? "ON" : "OFF");
+    break;
+  case FBV_ACK_PING:
+    printf("ACK/PING");
+    break;
+  case FBV_SET_TXT:
+    msg.params[msg.paramSize] = 0;
+    printf("SET TXT to '%s'", msg.params+2);
+    break;
+  case FBV_SET_BNK1:
+    printf("SET BNK 1 to %c", msg.params[0]);
+    break;
+  case FBV_SET_BNK2:
+    printf("SET BNK 2 to %c", msg.params[0]);
+    break;
+  case FBV_SET_CH:
+    printf("SET CH to %c", msg.params[0]);
     break;
   default:
     printf("CMD(%x)", msg.msgType);

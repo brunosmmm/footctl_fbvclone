@@ -36,7 +36,7 @@ static void fbv_rx_done(void) {
   // save message
   msg.paramSize = fsm.rxBuffer[0] - 1;
   msg.msgType = fsm.rxBuffer[1];
-  memcpy(&msg.params, fsm.rxBuffer+2, fsm.rxBuffer[0] - 2);
+  memcpy(&msg.params, fsm.rxBuffer+2, fsm.rxBuffer[0] - 1);
 
   if (fsm.cfg) {
     // callback with received message

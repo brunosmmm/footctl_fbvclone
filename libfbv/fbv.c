@@ -14,7 +14,7 @@
 #define FBV_USR_FLAG_MASK 0xF0
 
 // other
-#define RX_BUFFER_SIZE MAX_PARAM_SIZE + 1
+#define RX_BUFFER_SIZE MAX_PARAM_SIZE + 2
 
 typedef struct fbv_state_machine_s {
   uint8_t state;
@@ -81,6 +81,7 @@ void FBV_recv_byte(uint8_t byte) {
       byte = MAX_PARAM_SIZE;
     }
     fsm.pendingBytes = byte;
+    fsm.rxBuffer[fsm.wrPtr++] = byte;
     fsm.state = FBV_STATE_RX_CMD;
     break;
   case FBV_STATE_RX_CMD:

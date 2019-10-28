@@ -38,6 +38,11 @@ static void fbv_rx_done(void) {
   msg.msgType = fsm.rxBuffer[1];
   memcpy(&msg.params, fsm.rxBuffer+2, fsm.rxBuffer[0] - 1);
 
+  if (msg.msgType == FBV_SET_TXT) {
+    // null terminated string
+    msg.params[msg.paramSize] = 0;
+  }
+
   if (fsm.cfg) {
     // callback with received message
     if (fsm.cfg->msgRx) {

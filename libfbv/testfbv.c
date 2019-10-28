@@ -15,7 +15,6 @@ void message_received(FBVMessage msg) {
     printf("ACK/PING");
     break;
   case FBV_SET_TXT:
-    msg.params[msg.paramSize] = 0;
     printf("SET TXT to '%s'", msg.params+2);
     break;
   case FBV_SET_BNK1:

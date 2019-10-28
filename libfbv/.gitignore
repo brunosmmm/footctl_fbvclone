@@ -1,2 +1,4 @@
 
 *.o
+testfbv
+.gdb_history

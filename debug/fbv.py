@@ -11,7 +11,7 @@ class FBVMessage:
     COMMAND_FBV_SET_LED = 0x04
     COMMAND_FBV_SET_CH = 0x0C
     COMMAND_FBV_SET_NAME = 0x10
-    COMMAND_FBV_REQ_DONE = 0x01
+    COMMAND_FBV_ACK_PING = 0x01
     COMMAND_FBV_SET_BNKD = 0x0A
     COMMAND_FBV_SET_BNKU = 0x0B
     COMMAND_FBV_SET_FLAT = 0x20
@@ -22,7 +22,7 @@ class FBVMessage:
         COMMAND_FBV_SET_LED: "SET LED",
         COMMAND_FBV_SET_CH: "SET CH",
         COMMAND_FBV_SET_NAME: "SET NAME",
-        COMMAND_FBV_REQ_DONE: "SETUP END",
+        COMMAND_FBV_ACK_PING: "ACK/PING",
         COMMAND_FBV_SET_BNKU: "SET BANK DIGIT 1",
         COMMAND_FBV_SET_BNKD: "SET BANK DIGIT 2",
         COMMAND_FBV_SET_FLAT: "TUNER FLAT",
@@ -116,7 +116,7 @@ class FBVMessage:
 
     def __repr__(self):
         """Get representation."""
-        ret = ""
+        ret = "[{:02d}] ".format(3 + len(self.params))
         if self.command in self.COMMAND_NAMES:
             ret += self.COMMAND_NAMES[self.command]
         else:
@@ -143,8 +143,8 @@ class FBVMessage:
                 ret += " to '{}'".format(self.params[2:].decode("ascii"))
             except UnicodeDecodeError:
                 ret += " to ???"
-        elif self.command == self.COMMAND_FBV_REQ_DONE:
-            pass
+        elif self.command == self.COMMAND_FBV_ACK_PING:
+            ret += " {}".format(hex(self.params[0]))
         elif self.command in (
             self.COMMAND_FBV_SET_BNKD,
             self.COMMAND_FBV_SET_BNKU,
@@ -175,6 +175,7 @@ class FBVStateMachine:
         """Initialize."""
         self._state = self.STATE_SYSEX_BYTE
         self._cur_msg = []
+        self._sent_by_host = False
         self._pending_bytes = 0
         self._msg_cb = msg_callback
 
@@ -192,9 +193,12 @@ class FBVStateMachine:
         if isinstance(item, bytes):
             item = ord(item)
         if self._state == self.STATE_SYSEX_BYTE:
-            if item != 0xF0:
+            self._sent_by_host = False
+            if item not in (0xF0, 0xFF):
                 # ignore
                 return
+            if item == 0xFF:
+                self._sent_by_host = True
             self._cur_msg.append(0xF0)
             self._state = self.STATE_LEN
         elif self._state == self.STATE_LEN:
@@ -212,7 +216,10 @@ class FBVStateMachine:
                 # done
                 self._state = self.STATE_SYSEX_BYTE
                 if callable(self._msg_cb):
-                    self._msg_cb(FBVMessage.from_bytes(*self._cur_msg))
+                    self._msg_cb(
+                        FBVMessage.from_bytes(*self._cur_msg),
+                        sent_by_host=self._sent_by_host,
+                    )
                 self._cur_msg = []
                 self._pending_bytes = 0
 

@@ -8,9 +8,10 @@ received_messages = []
 FILTER = []
 
 
-def msg_callback(msg):
+def msg_callback(msg, **kwargs):
     """Message callback."""
-    received_messages.append(msg)
+    host_sent = kwargs.get("sent_by_host", False)
+    received_messages.append((msg, host_sent))
 
 
 if __name__ == "__main__":
@@ -28,8 +29,18 @@ if __name__ == "__main__":
     fsm.recv_bytes(data)
 
     # filter
-    filtered = filter_msgs(received_messages, remove_types=FILTER)
+    msg_only = [msg[0] for msg in received_messages]
+    filtered = filter_msgs(msg_only, remove_types=FILTER)
+    updated_filtered = []
+    for msg, host_sent in received_messages:
+        if msg not in filtered:
+            continue
+        updated_filtered.append((msg, host_sent))
 
     # print
-    for msg in filtered:
-        print(msg)
+    for msg, host_sent in updated_filtered:
+        if host_sent is True:
+            prefix = "SENT: "
+        else:
+            prefix = ""
+        print("{}{}".format(prefix, msg))

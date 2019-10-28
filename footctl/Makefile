@@ -1,8 +1,8 @@
-PROJECT = awesomesauce
+PROJECT = fbvclone
 BUILD_DIR = bin
 
 SHARED_DIR = ../libfbv
-CFILES = footctl.c
+CFILES = footctl.c fbv.c
 
 # TODO - you will need to edit these two lines!
 DEVICE=stm32f030c8

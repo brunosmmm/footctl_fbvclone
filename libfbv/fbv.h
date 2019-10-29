@@ -14,13 +14,15 @@ typedef enum fbv_message_type_e
    FBV_SET_LED = 0x04,
    FBV_SET_CH = 0x0C,
    FBV_SET_TXT = 0x10,
-   FBV_ACK_PING = 0x01,
+   FBV_PING = 0x01,
    FBV_SET_BNK1 = 0x0A,
    FBV_SET_BNK2 = 0x0B,
    FBV_TUN_STAT = 0x08,
    FBV_BTN_STAT = 0x81,
    FBV_CTL_STAT = 0x82,
-   FBV_HNDSHAKE = 0x30
+   FBV_HNDSHAKE = 0x30,
+   FBV_ACK = 0x80,
+   FBV_PROBE = 0x90
   } FBVMessageType;
 
 typedef enum fbv_led_type_e

@@ -1,13 +1,11 @@
-#include "fbv.h"
-
-static FBVStateMachineConfig fbv_cfg;
+#include "manager.h"
 
 int main(void) {
 
   // initialize
-  FBV_initialize(&fbv_cfg);
+  MANAGER_initialize();
 
   for (;;) {
-
+    MANAGER_cycle();
   }
 }

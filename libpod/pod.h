@@ -20,7 +20,8 @@ typedef enum pod_fx_e
    BOD_FX_STOMP = BOD_CTL_STOMP_EN,
    BOD_FX_COMP = BOD_CTL_COMP_EN,
    BOD_FX_GATE = BOD_CTL_GATE_EN,
-   BOD_FX_AMP = BOD_CTL_AMP_EN
+   BOD_FX_AMP = BOD_CTL_AMP_EN,
+   BOD_FX_WAH = BOD_CTL_WAH_EN
   } PODTogglableFX;
 
 typedef struct pod_message_s {
@@ -42,5 +43,6 @@ void POD_send_msg(PODMessage* msg);
 void POD_set_fx_state(PODTogglableFX fx, uint8_t state);
 void POD_enable_tuner(void);
 void POD_disable_tuner(void);
+void POD_change_program(uint8_t value);
 
 #endif

@@ -58,6 +58,17 @@ static inline void _send_cc(PODControlType ctlType, uint8_t value) {
   POD_send_msg(&msg);
 }
 
+
+static inline void _send_pc(uint8_t value) {
+  PODMessage msg =
+    {
+     .msgType = POD_PROGRAM_CHANGE,
+     .ctlType = 0x00,
+     .value = value
+    };
+  POD_send_msg(&msg);
+}
+
 // set fx state
 void POD_set_fx_state(PODTogglableFX fx, uint8_t state) {
   _send_cc((PODControlType)fx, state ? 0xff : 0x00);
@@ -69,4 +80,8 @@ void POD_enable_tuner(void) {
 
 void POD_disable_tuner(void) {
   _send_cc(BOD_CTL_TUNER_EN, 0x00);
+}
+
+void POD_change_program(uint8_t value) {
+  _send_pc(value);
 }

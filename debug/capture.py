@@ -9,7 +9,7 @@ from collections import deque
 
 from fbv import FBVMessage, FBVStateMachine, filter_msgs
 
-FILTER = [FBVMessage.COMMAND_FBV_SET_LED]
+FILTER = []
 
 first_ping = False
 data_dump = bytes()
@@ -18,7 +18,7 @@ data_dump = bytes()
 class RXThread(Thread):
     """Receive bytes."""
 
-    def __init__(self, port, timeout=0.1, **kwargs):
+    def __init__(self, port, timeout=0.1, save_to=None, **kwargs):
         """Initialize."""
         super().__init__(**kwargs)
         self._port = serial.Serial(port, 31250, timeout=timeout)
@@ -29,22 +29,41 @@ class RXThread(Thread):
         self._running = False
         self._first_ping = False
         self._start_time = None
+        self._pingback = False
+        self._anyresponse = False
+        self._saveto = save_to
+        if save_to is not None:
+            with open(self._saveto, "wb") as dataf:
+                dataf.write(bytes([0xAA, 0xAA]))
+
+    @property
+    def ackping(self):
+        """Get pingback state."""
+        return self._pingback
+
+    @ackping.setter
+    def ackping(self, value):
+        """Set pingback state."""
+        self._pingback = value
 
     def _msg_cb(self, msg, **kwargs):
         """Receive message."""
+        self._anyresponse = True
         if msg.command == FBVMessage.COMMAND_FBV_PING:
             if msg.params[0] == 0x00:
                 # respond
                 self._log_evt("RX: {}".format(msg))
-                self._write(
-                    0xF0, 0x07, 0x80, 0x00, 0x02, 0x00, 0x01, 0x01, 0x00
-                )
+                if self._pingback is True:
+                    self._write(
+                        0xF0, 0x07, 0x80, 0x00, 0x02, 0x00, 0x01, 0x01, 0x00
+                    )
                 self._first_ping = True
                 return
 
         ret = filter_msgs(msg, remove_types=FILTER)
         if ret:
             self._log_evt("RX: {}".format(ret[0]))
+            self._append_to_file(bytes(ret[0].bytes))
 
     def _log_time(self):
         """Get log time."""
@@ -65,12 +84,33 @@ class RXThread(Thread):
         """Internal write function."""
         msg = FBVMessage.from_bytes(*data)
         self._log_evt("TX: {}".format(msg))
+        msg_bytes = msg.bytes
+        msg_bytes[0] = 0xFF
+        self._append_to_file(bytes(msg_bytes))
         self._port.write(bytes(data))
+
+    def _append_to_file(self, data):
+        """Append to dump file."""
+        if self._saveto is None:
+            return
+
+        with open(self._saveto, "ab") as dataf:
+            dataf.write(data)
 
     def wait_firstping(self):
         """Block until first ping is received."""
         while self._first_ping is False:
             pass
+
+    @property
+    def firstping(self):
+        """Get whether first ping was received."""
+        return self._first_ping
+
+    @property
+    def anyresponse(self):
+        """Get whether any response has been received."""
+        return self._anyresponse
 
     def send(self, *data):
         """Send message."""
@@ -84,6 +124,7 @@ class RXThread(Thread):
 
     def run(self):
         """Run."""
+
         self._start_time = datetime.datetime.now()
         self._running = True
         while True:
@@ -130,39 +171,53 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     if args.live is True:
-        timeout = 0.15
+        timeout = 0.01
     else:
         timeout = args.timeout
 
-    rx = RXThread(args.port, timeout)
+    rx = RXThread(args.port, timeout, save_to=args.dump)
     rx.start()
 
     # ANNOUNCE
-    rx.send(0xF0, 0x02, 0x90, 0x00)
-    rx.send(0xF0, 0x02, 0x30, 0x08)
+    # rx.send(0xF0, 0x02, 0x90, 0x00)
+    while rx.firstping is False:
+        if rx.anyresponse is False:
+            rx.send(0xF0, 0x02, 0x90, 0x00)
+        time.sleep(0.3)
 
-    # wait for first ping
-    rx.wait_firstping()
+    print("DEBUG: got first ping; continuing")
+    # first ping received, continue
+    rx.send(0xF0, 0x02, 0x30, 0x08)
+    rx.ackping = True
 
     # wait a few seconds
-    print("DEBUG: got first ping; waiting")
-    time.sleep(3)
+    time.sleep(10)
+
+    # rx.ackping = True
 
     # REQUEST
     state = 1
+    btn = 0
+    cmd = 0
     press_wait_count = 0
     between_press_wait_count = 0
     print("DEBUG: start main loop")
     while True:
         try:
             if between_press_wait_count == 0:
-                if press_wait_count < 5:
+                if press_wait_count < 3:
                     press_wait_count += 1
                 else:
-                    rx.send(0xF0, 0x03, 0x81, 0x41, state)
+                    rx.send(0xF0, 0x03, cmd, btn, state)
                     state ^= 1
                     if state == 1:
+                        btn += 1
                         between_press_wait_count = 50
+                    if btn == 256:
+                        cmd += 1
+                        btn = 0
+                    if cmd == 256:
+                        break
                     press_wait_count = 0
             else:
                 between_press_wait_count -= 1

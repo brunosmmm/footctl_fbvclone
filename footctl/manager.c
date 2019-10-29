@@ -2,6 +2,7 @@
 #include "pod.h"
 #include "config.h"
 #include "manager.h"
+#include "io.h"
 #include <string.h>
 
 // setup togglable FX bits for internal state
@@ -270,4 +271,8 @@ void MANAGER_cycle(void) {
   else {
     lastPing = 0;
   }
+}
+
+void MANAGER_btn_event(uint8_t btn_id, uint8_t state) {
+
 }

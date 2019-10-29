@@ -17,6 +17,8 @@ class FBVMessage:
     COMMAND_FBV_SET_FLAT = 0x20
     COMMAND_FBV_TUNER = 0x08
     COMMAND_FBV_ACK = 0x80
+    COMMAND_FBV_BTN = 0x81
+    COMMAND_FBV_CTL = 0x82
 
     COMMANDS = (COMMAND_FBV_SET_LED, COMMAND_FBV_SET_CH, COMMAND_FBV_SET_NAME)
     COMMAND_NAMES = {
@@ -29,8 +31,13 @@ class FBVMessage:
         COMMAND_FBV_SET_FLAT: "TUNER FLAT",
         COMMAND_FBV_TUNER: "TUNER NOTE",
         COMMAND_FBV_ACK: "ACK",
+        COMMAND_FBV_BTN: "BTN",
+        COMMAND_FBV_CTL: "CTL",
     }
 
+    # weird LED 0x0 appears when speed of mod is a note symbol
+    # it is always set to off. when it is a value in milliseconds,
+    # the pedal stops sending it to off
     FBV_LED_TAP = 0x61
     FBV_LED_MOD = 0x41
     FBV_LED_DLY = 0x51
@@ -43,6 +50,7 @@ class FBVMessage:
     FBV_LED_SB3 = 0x32
     FBV_LED_AMP = 0x01
     FBV_LED_REV = 0x21
+    FBV_LED_WAH = 0x13
     LED_NAMES = {
         FBV_LED_TAP: "TAP",
         FBV_LED_MOD: "MOD",
@@ -56,6 +64,7 @@ class FBVMessage:
         FBV_LED_SB3: "GATE",
         FBV_LED_AMP: "AMP",
         FBV_LED_REV: "REVERB",
+        FBV_LED_WAH: "WAH",
     }
 
     def __init__(self, cmd, params):
@@ -86,7 +95,7 @@ class FBVMessage:
     @property
     def bytes(self):
         """Get message bytes."""
-        msg_bytes = [0xF0, len(self._params) + 1]
+        msg_bytes = [0xF0, len(self._params) + 1, self._cmd]
         msg_bytes += self._params
         return msg_bytes
 

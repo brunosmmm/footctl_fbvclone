@@ -11,22 +11,24 @@ class FBVMessage:
     COMMAND_FBV_SET_LED = 0x04
     COMMAND_FBV_SET_CH = 0x0C
     COMMAND_FBV_SET_NAME = 0x10
-    COMMAND_FBV_ACK_PING = 0x01
+    COMMAND_FBV_PING = 0x01
     COMMAND_FBV_SET_BNKD = 0x0A
     COMMAND_FBV_SET_BNKU = 0x0B
     COMMAND_FBV_SET_FLAT = 0x20
     COMMAND_FBV_TUNER = 0x08
+    COMMAND_FBV_ACK = 0x80
 
     COMMANDS = (COMMAND_FBV_SET_LED, COMMAND_FBV_SET_CH, COMMAND_FBV_SET_NAME)
     COMMAND_NAMES = {
         COMMAND_FBV_SET_LED: "SET LED",
         COMMAND_FBV_SET_CH: "SET CH",
         COMMAND_FBV_SET_NAME: "SET NAME",
-        COMMAND_FBV_ACK_PING: "ACK/PING",
+        COMMAND_FBV_PING: "PING",
         COMMAND_FBV_SET_BNKU: "SET BANK DIGIT 1",
         COMMAND_FBV_SET_BNKD: "SET BANK DIGIT 2",
         COMMAND_FBV_SET_FLAT: "TUNER FLAT",
         COMMAND_FBV_TUNER: "TUNER NOTE",
+        COMMAND_FBV_ACK: "ACK",
     }
 
     FBV_LED_TAP = 0x61
@@ -143,8 +145,10 @@ class FBVMessage:
                 ret += " to '{}'".format(self.params[2:].decode("ascii"))
             except UnicodeDecodeError:
                 ret += " to ???"
-        elif self.command == self.COMMAND_FBV_ACK_PING:
+        elif self.command == self.COMMAND_FBV_PING:
             ret += " {}".format(hex(self.params[0]))
+        elif self.command == self.COMMAND_FBV_ACK:
+            pass
         elif self.command in (
             self.COMMAND_FBV_SET_BNKD,
             self.COMMAND_FBV_SET_BNKU,

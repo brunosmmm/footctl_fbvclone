@@ -189,21 +189,21 @@ if __name__ == "__main__":
         # perform search
         state = 1
         if args.search == "all":
-            if args.search_start.startswith("0x"):
+            if isinstance(args.search_start, str) and args.search_start.startswith("0x"):
                 cmd = int(args.search_start[2:], 16)
             else:
                 cmd = int(args.search_start)
             btn = 0
         else:
-            if args.search.startswith("0x"):
+            if isinstance(args.search, str) and args.search.startswith("0x"):
                 cmd = int(args.search[2:], 16)
             else:
                 cmd = int(args.search)
-            if args.search_start.startswith("0x"):
+            if isinstance(args.search_start, str) and args.search_start.startswith("0x"):
                 btn = int(args.search_start[2:], 16)
             else:
                 btn = int(args.search_start)
-        if args.search_end.startswith("0x"):
+        if isinstance(args.search_end, str) and args.search_end.startswith("0x"):
             search_end = int(args.search_end[2:], 16)
         else:
             search_end = int(args.search_end)

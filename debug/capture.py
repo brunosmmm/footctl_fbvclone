@@ -145,7 +145,8 @@ class RXThread(Thread):
         global data_dump
         global first_ping
 
-if __name__ == "__main__"
+
+if __name__ == "__main__":
 
     parser = ArgumentParser()
     parser.add_argument("--port", default="/dev/ttyUSB0")
@@ -157,7 +158,7 @@ if __name__ == "__main__"
     parser.add_argument("--search-end", default=255)
 
     args = parser.parse_args()
-    if args.live is True:
+    if args.forever is True or args.search is not None:
         timeout = 0.01
     else:
         timeout = args.timeout
@@ -184,23 +185,28 @@ if __name__ == "__main__"
                 time.sleep(0.1)
             except KeyboardInterrupt:
                 break
-    elif args.forever is False:
-        delta = datetime.datetime.now() - start_time
-        while delta.total_seconds() < args.timeout:
-            try:
-                delta = datetime.datetime.now() - start_time
-                time.sleep(0.1)
-            except KeyboardInterrupt:
-                break
-    else:
+    elif args.search is not None:
         # perform search
         state = 1
         if args.search == "all":
-            cmd = int(args.search_start)
+            if args.search_start.startswith("0x"):
+                cmd = int(args.search_start[2:], 16)
+            else:
+                cmd = int(args.search_start)
             btn = 0
         else:
-            cmd = int(args.search)
-            btn = int(args.search_start)
+            if args.search.startswith("0x"):
+                cmd = int(args.search[2:], 16)
+            else:
+                cmd = int(args.search)
+            if args.search_start.startswith("0x"):
+                btn = int(args.search_start[2:], 16)
+            else:
+                btn = int(args.search_start)
+        if args.search_end.startswith("0x"):
+            search_end = int(args.search_end[2:], 16)
+        else:
+            search_end = int(args.search_end)
         press_wait_count = 0
         between_press_wait_count = 0
         # wait a few seconds
@@ -216,14 +222,14 @@ if __name__ == "__main__"
                         state ^= 1
                         if state == 1:
                             btn += 1
-                            between_press_wait_count = 50
-                        if args.search != "all" and btn == int(args.search_end) + 1:
+                            between_press_wait_count = 30
+                        if args.search != "all" and btn == search_end + 1:
                             # done
                             break
                         elif args.search == "all" and btn == 256:
                             cmd += 1
                             btn = 0
-                        if args.search == "all" and cmd == int(args.search_end) + 1:
+                        if args.search == "all" and cmd == search_end + 1:
                             break
                         press_wait_count = 0
                 else:
@@ -231,8 +237,14 @@ if __name__ == "__main__"
                 time.sleep(0.1)
             except KeyboardInterrupt:
                 break
+    else:
+        delta = datetime.datetime.now() - start_time
+        while delta.total_seconds() < args.timeout:
+            try:
+                delta = datetime.datetime.now() - start_time
+                time.sleep(0.1)
+            except KeyboardInterrupt:
+                break
     # stop
     rx.stop()
     rx.join()
-
-

@@ -1,8 +1,8 @@
 PROJECT = fbvclone
 BUILD_DIR = bin
 
-SHARED_DIR = ../libfbv
-CFILES = footctl.c fbv.c
+SHARED_DIR = ../libfbv ../libpod
+CFILES = footctl.c fbv.c pod.c
 
 # TODO - you will need to edit these two lines!
 DEVICE=stm32f030c8

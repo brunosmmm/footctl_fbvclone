@@ -11,9 +11,6 @@ from fbv import FBVMessage, FBVStateMachine, filter_msgs
 
 FILTER = []
 
-first_ping = False
-data_dump = bytes()
-
 
 class RXThread(Thread):
     """Receive bytes."""
@@ -143,31 +140,21 @@ class RXThread(Thread):
                 except IndexError:
                     empty = True
 
-
-def write_bytes(port, buffer, *data):
-    """Write bytes."""
-    msg = FBVMessage.from_bytes(*data)
-    print("TX: {}".format(msg))
-    sent = bytes(data)
-    port.write(sent)
-    # modify first byte for bookkeeping
-    _data = list(data)
-    _data[0] = 0xFF
-    buffer += bytes(_data)
-
-
-if __name__ == "__main__":
-
     def msg_callback(msg, **kwargs):
         """Message callback."""
         global data_dump
         global first_ping
 
+if __name__ == "__main__"
+
     parser = ArgumentParser()
     parser.add_argument("--port", default="/dev/ttyUSB0")
     parser.add_argument("--timeout", default=20, type=int)
     parser.add_argument("--dump")
-    parser.add_argument("--live", action="store_true")
+    parser.add_argument("--forever", action="store_true")
+    parser.add_argument("--search", help="search command space")
+    parser.add_argument("--search-start", default=0)
+    parser.add_argument("--search-end", default=255)
 
     args = parser.parse_args()
     if args.live is True:
@@ -176,6 +163,7 @@ if __name__ == "__main__":
         timeout = args.timeout
 
     rx = RXThread(args.port, timeout, save_to=args.dump)
+    start_time = datetime.datetime.now()
     rx.start()
 
     # ANNOUNCE
@@ -190,45 +178,61 @@ if __name__ == "__main__":
     rx.send(0xF0, 0x02, 0x30, 0x08)
     rx.ackping = True
 
-    # wait a few seconds
-    time.sleep(10)
-
-    # rx.ackping = True
-
-    # REQUEST
-    state = 1
-    btn = 0
-    cmd = 0
-    press_wait_count = 0
-    between_press_wait_count = 0
-    print("DEBUG: start main loop")
-    while True:
-        try:
-            if between_press_wait_count == 0:
-                if press_wait_count < 3:
-                    press_wait_count += 1
+    if args.search is None and args.forever is True:
+        while True:
+            try:
+                time.sleep(0.1)
+            except KeyboardInterrupt:
+                break
+    elif args.forever is False:
+        delta = datetime.datetime.now() - start_time
+        while delta.total_seconds() < args.timeout:
+            try:
+                delta = datetime.datetime.now() - start_time
+                time.sleep(0.1)
+            except KeyboardInterrupt:
+                break
+    else:
+        # perform search
+        state = 1
+        if args.search == "all":
+            cmd = int(args.search_start)
+            btn = 0
+        else:
+            cmd = int(args.search)
+            btn = int(args.search_start)
+        press_wait_count = 0
+        between_press_wait_count = 0
+        # wait a few seconds
+        time.sleep(10)
+        print("DEBUG: start main loop")
+        while True:
+            try:
+                if between_press_wait_count == 0:
+                    if press_wait_count < 3:
+                        press_wait_count += 1
+                    else:
+                        rx.send(0xF0, 0x03, cmd, btn, state)
+                        state ^= 1
+                        if state == 1:
+                            btn += 1
+                            between_press_wait_count = 50
+                        if args.search != "all" and btn == int(args.search_end) + 1:
+                            # done
+                            break
+                        elif args.search == "all" and btn == 256:
+                            cmd += 1
+                            btn = 0
+                        if args.search == "all" and cmd == int(args.search_end) + 1:
+                            break
+                        press_wait_count = 0
                 else:
-                    rx.send(0xF0, 0x03, cmd, btn, state)
-                    state ^= 1
-                    if state == 1:
-                        btn += 1
-                        between_press_wait_count = 50
-                    if btn == 256:
-                        cmd += 1
-                        btn = 0
-                    if cmd == 256:
-                        break
-                    press_wait_count = 0
-            else:
-                between_press_wait_count -= 1
-            time.sleep(0.1)
-        except KeyboardInterrupt:
-            break
-
+                    between_press_wait_count -= 1
+                time.sleep(0.1)
+            except KeyboardInterrupt:
+                break
     # stop
     rx.stop()
     rx.join()
 
-    # if args.dump is not None:
-    #     with open(args.dump, "wb") as dumpdata:
-    #         dumpdata.write(data_dump)
+

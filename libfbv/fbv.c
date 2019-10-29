@@ -22,7 +22,7 @@ typedef struct fbv_state_machine_s {
   uint8_t rxBuffer[RX_BUFFER_SIZE];
   uint8_t wrPtr;
   uint8_t pendingBytes;
-  FBVStateMachineConfig* cfg;
+  FBVStateMachineConfig cfg;
 } FBVStateMachine;
 
 
@@ -43,11 +43,9 @@ static void fbv_rx_done(void) {
     msg.params[msg.paramSize] = 0;
   }
 
-  if (fsm.cfg) {
-    // callback with received message
-    if (fsm.cfg->msgRx) {
-      (fsm.cfg->msgRx)(msg);
-    }
+  // callback with received message
+  if (fsm.cfg.msgRx) {
+    (fsm.cfg.msgRx)(msg);
   }
 }
 
@@ -61,7 +59,12 @@ uint8_t FBV_get_flags(void) {
 // Initialize state machine
 void FBV_initialize(FBVStateMachineConfig* cfg) {
   fsm.state = FBV_STATE_RX_HDR;
-  fsm.cfg = cfg;
+  if (cfg) {
+    fsm.cfg = *cfg;
+  }
+  else {
+    memset(&fsm.cfg, 0, sizeof(FBVStateMachineConfig));
+  }
   fsm.wrPtr = 0;
   fsm.pendingBytes = 0;
   fsm.flags = FBV_FLAG_INIT;
@@ -134,20 +137,18 @@ void FBV_send_msg(FBVMessage* msg) {
   }
 
   // just call the send byte function if available
-  if (fsm.cfg) {
-    if (fsm.cfg->msgTx) {
-      // send header
-      (fsm.cfg->msgTx)(0xF0);
-      // send length
-      (fsm.cfg->msgTx)(msg->paramSize + 2);
-      // send command
-      (fsm.cfg->msgTx)(msg->msgType);
-      // send params
-      paramSize = msg->paramSize;
-      while (paramSize) {
-        (fsm.cfg->msgTx)(msg->params[msg->paramSize-paramSize]);
-        paramSize--;
-      }
+  if (fsm.cfg.msgTx) {
+    // send header
+    (fsm.cfg.msgTx)(0xF0);
+    // send length
+    (fsm.cfg.msgTx)(msg->paramSize + 2);
+    // send command
+    (fsm.cfg.msgTx)(msg->msgType);
+    // send params
+    paramSize = msg->paramSize;
+    while (paramSize) {
+      (fsm.cfg.msgTx)(msg->params[msg->paramSize-paramSize]);
+      paramSize--;
     }
   }
 }

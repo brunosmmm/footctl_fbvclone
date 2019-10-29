@@ -36,7 +36,8 @@ typedef enum fbv_led_type_e
    FBV_LED_SB2 = 0x22,
    FBV_LED_SB3 = 0x32,
    FBV_LED_AMP = 0x01,
-   FBV_LED_REV = 0x21
+   FBV_LED_REV = 0x21,
+   FBV_LED_WAH = 0x13
   } FBVLED;
 
 typedef struct fbv_message_s {

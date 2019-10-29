@@ -26,7 +26,7 @@ if __name__ == "__main__":
     fsm = FBVStateMachine(msg_callback)
 
     # read
-    fsm.recv_bytes(data)
+    fsm.recv_bytes(data[2:])
 
     # filter
     msg_only = [msg[0] for msg in received_messages]
@@ -40,7 +40,7 @@ if __name__ == "__main__":
     # print
     for msg, host_sent in updated_filtered:
         if host_sent is True:
-            prefix = "SENT: "
+            prefix = "TX: "
         else:
-            prefix = ""
+            prefix = "RX: "
         print("{}{}".format(prefix, msg))

@@ -108,13 +108,13 @@ void VIRTUAL_cycle(void) {
     return;
   }
 
-  if (pod.flags & VIRTUAL_FLAG_PACKET_RX) {
-    _packet_received();
-    pod.flags &= ~VIRTUAL_FLAG_PACKET_RX;
-  }
   if (pod.flags & VIRTUAL_FLAG_PACKET_TX) {
     _fbv_tx_many(pod.txBuffer, pod.txSize);
     pod.flags &= ~VIRTUAL_FLAG_PACKET_TX;
+  }
+  if (pod.flags & VIRTUAL_FLAG_PACKET_RX) {
+    _packet_received();
+    pod.flags &= ~VIRTUAL_FLAG_PACKET_RX;
   }
 
   pod.lastCycle = now;

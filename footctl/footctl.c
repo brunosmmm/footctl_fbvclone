@@ -1,11 +1,23 @@
 #include "manager.h"
 #include "io.h"
+#ifdef VIRTUAL_HW
+#include <stdio.h>
+#include <stdlib.h>
+#endif
 
 int main(void) {
+
+#ifdef VIRTUAL_HW
+  printf("INFO: initializing\n");
+#endif
 
   // initialize
   MANAGER_initialize();
   BTNS_initialize(MANAGER_btn_event);
+
+#ifdef VIRTUAL_HW
+  printf("INFO: starting main loop\n");
+#endif
 
   for (;;) {
     BTNS_cycle();

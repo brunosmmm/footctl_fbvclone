@@ -5,6 +5,9 @@
 #include "io.h"
 #include "time.h"
 #include <string.h>
+#ifdef VIRTUAL_HW
+#include <stdio.h>
+#endif
 
 // setup togglable FX bits for internal state
 #define POD_FX_EQ 0x0
@@ -240,11 +243,15 @@ static void _fbv_rx(FBVMessage msg) {
 }
 
 static void _fbv_tx(uint8_t byte) {
-
+#ifdef VIRTUAL_HW
+  printf("FBV TX: %hhx\n", byte);
+#endif
 }
 
 static void _pod_tx(uint8_t byte) {
-
+#ifdef VIRTUAL_HW
+  printf("MIDI TX: %hhx\n", byte);
+#endif
 }
 
 void MANAGER_initialize(void) {

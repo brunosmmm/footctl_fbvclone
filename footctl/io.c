@@ -2,6 +2,9 @@
 #include "config.h"
 #include "time.h"
 #include <string.h>
+#ifdef VIRTUAL_HW
+#include <stdio.h>
+#endif
 
 #define BTN_POLL_INTERVAL 20
 #define BTN_DEBOUNCE_COUNT 2
@@ -64,5 +67,7 @@ void BTNS_cycle(void) {
 }
 
 void LEDS_set_state(uint32_t led_states) {
-
+#ifdef VIRTUAL_HW
+  printf("SET LED STATES: %x\n", led_states);
+#endif
 }

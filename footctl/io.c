@@ -6,8 +6,6 @@
 #include <stdio.h>
 #endif
 
-#define BTN_POLL_INTERVAL 20
-#define BTN_DEBOUNCE_COUNT 2
 
 typedef struct btn_control_s {
   BTNEventCallback evtCb;
@@ -16,12 +14,24 @@ typedef struct btn_control_s {
   tick_t lastCycle;
 } BTNStateControl;
 
+typedef struct exp_pedal_s {
+  uint32_t expValues;
+  tick_t lastCycle;
+} EXPState;
+
 static BTNStateControl btns;
+static EXPState _exp;
 
 void BTNS_initialize(BTNEventCallback callback) {
   btns.evtCb = callback;
   btns.buttonStates = 0;
+  btns.lastCycle = 0;
   memset(btns.transientStates, 0, IO_LED_COUNT);
+}
+
+void EXP_initialize(void) {
+  _exp.expValues = 0;
+  _exp.lastCycle = 0;
 }
 
 uint32_t BTNS_get_state(void) {
@@ -29,6 +39,11 @@ uint32_t BTNS_get_state(void) {
 }
 
 static uint32_t _read_btns(void) {
+  // do something
+  return 0;
+}
+
+static uint32_t _read_exp(void) {
   // do something
   return 0;
 }
@@ -66,8 +81,19 @@ void BTNS_cycle(void) {
   }
 }
 
+void EXP_cycle(void) {
+  if (TIME_get() - _exp.lastCycle < EXP_POLL_INTERVAL) {
+    return;
+  }
+  _exp.expValues = _read_exp();
+}
+
 void LEDS_set_state(uint32_t led_states) {
 #ifdef VIRTUAL_HW
   printf("SET LED STATES: %x\n", led_states);
 #endif
+}
+
+uint32_t EXP_get_values(void) {
+  return _exp.expValues;
 }

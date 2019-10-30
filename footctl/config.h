@@ -7,6 +7,13 @@
 #define IO_BTN_COUNT 12
 #define IO_LED_COUNT 10
 
+// button poll configuration
+#define BTN_POLL_INTERVAL 20
+#define BTN_DEBOUNCE_COUNT 2
+
+// expression pedal poll configuration
+#define EXP_POLL_INTERVAL 10
+
 typedef uint32_t tick_t;
 
 #endif

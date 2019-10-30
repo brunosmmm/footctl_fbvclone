@@ -14,6 +14,7 @@ int main(void) {
   // initialize
   MANAGER_initialize();
   BTNS_initialize(MANAGER_btn_event);
+  EXP_initialize();
 
 #ifdef VIRTUAL_HW
   printf("INFO: starting main loop\n");
@@ -21,6 +22,7 @@ int main(void) {
 
   for (;;) {
     BTNS_cycle();
+    EXP_cycle();
     MANAGER_cycle();
   }
 }

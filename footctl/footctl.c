@@ -4,12 +4,14 @@
 #ifdef VIRTUAL_HW
 #include <stdio.h>
 #include <stdlib.h>
+#include "virtual.h"
 #endif
 
 int main(void) {
 
 #ifdef VIRTUAL_HW
   printf("INFO: initializing\n");
+  VIRTUAL_initialize();
 #endif
 
   // initialize
@@ -26,5 +28,8 @@ int main(void) {
     BTNS_cycle();
     EXP_cycle();
     MANAGER_cycle();
+#ifdef VIRTUAL_HW
+    VIRTUAL_cycle();
+#endif
   }
 }

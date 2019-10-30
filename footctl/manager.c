@@ -7,6 +7,7 @@
 #include <string.h>
 #ifdef VIRTUAL_HW
 #include <stdio.h>
+#include "virtual.h"
 #endif
 
 // setup togglable FX bits for internal state
@@ -246,6 +247,7 @@ static void _fbv_rx(FBVMessage msg) {
 static void _fbv_tx(uint8_t byte) {
 #ifdef VIRTUAL_HW
   printf("FBV TX: %hhx\n", byte);
+  VIRTUAL_rxbyte(byte);
 #endif
 }
 

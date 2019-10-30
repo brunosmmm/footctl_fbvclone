@@ -15,7 +15,7 @@ typedef struct btn_control_s {
 } BTNStateControl;
 
 typedef struct exp_pedal_s {
-  uint32_t expValues;
+  uint16_t expValues;
   tick_t lastCycle;
 } EXPState;
 
@@ -94,6 +94,6 @@ void LEDS_set_state(uint32_t led_states) {
 #endif
 }
 
-uint32_t EXP_get_values(void) {
+uint16_t EXP_get_values(void) {
   return _exp.expValues;
 }

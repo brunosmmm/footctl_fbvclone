@@ -86,6 +86,10 @@ void POD_change_program(uint8_t value) {
   _send_pc(value);
 }
 
+void POD_change_control(PODControlType ctl, uint8_t value) {
+  _send_cc(ctl, value);
+}
+
 void POD_send_tap(void) {
   _send_cc(BOD_CTL_TAP, 0xff);
 }

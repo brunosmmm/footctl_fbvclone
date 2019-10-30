@@ -63,6 +63,7 @@ typedef struct manager_s {
   uint32_t mainCycleTimer;
   uint32_t btnStates;
   uint8_t btnHoldCount[IO_BTN_COUNT];
+  uint16_t expValues;
 } Manager;
 
 static Manager mgr;
@@ -271,6 +272,7 @@ void MANAGER_initialize(void) {
   mgr.fxState = 0;
   mgr.otherLedState = 0;
   mgr.btnStates = 0;
+  mgr.expValues = 0;
   memset(mgr.currentText, 0, 16);
   memset(mgr.currentProgram, 0, 3);
   memset(mgr.btnHoldCount, 0, IO_LED_COUNT);
@@ -324,6 +326,22 @@ static void _detect_btn_hold(void) {
   btn_states = mgr.btnStates;
 }
 
+static inline void _detect_exp_change(void) {
+  uint32_t exp_val = EXP_get_values();
+  if (exp_val != mgr.expValues) {
+    // emit MIDI message (will depend on configuration)
+    if ((exp_val & 0x00FF) ^ (mgr.expValues & 0x00FF)) {
+      // exp pedal 1 changed
+      POD_change_control(EXP1_CC, (uint8_t)(exp_val & 0xFF));
+    } else {
+      // exp pedal 2 changed
+      POD_change_control(EXP2_CC, (uint8_t)(exp_val>>8));
+    }
+    // update values
+    mgr.expValues = exp_val;
+  }
+}
+
 void MANAGER_cycle(void) {
   static uint32_t lastPing = 0;
   uint32_t tmp = 0;
@@ -365,6 +383,9 @@ void MANAGER_cycle(void) {
 
   // manage button hold status
   _detect_btn_hold();
+
+  // manage expression pedal change
+  _detect_exp_change();
 
   // trigger display redraw
   if (mgr.flags & FLAG_DISPLAY_DIRTY) {

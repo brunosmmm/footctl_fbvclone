@@ -37,6 +37,6 @@ void LEDS_set_state(uint32_t led_states);
 // Expression pedals
 void EXP_initialize(void);
 void EXP_cycle(void);
-uint32_t EXP_get_values(void);
+uint16_t EXP_get_values(void);
 
 #endif

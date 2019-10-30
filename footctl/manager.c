@@ -178,16 +178,16 @@ static void _fbv_rx(FBVMessage msg) {
   uint8_t temp = 0;
   // if we receive anything, then POD is alive
   mgr.flags |= FLAG_POD_ALIVE;
-  if (mgr.flags & FLAG_WAIT_POD) {
-    if (msg.msgType == FBV_PING) {
+  if (msg.msgType == FBV_PING) {
+    if (mgr.flags & FLAG_WAIT_POD) {
       // done waiting
       mgr.flags &= ~FLAG_WAIT_POD;
+    }
 #ifdef POD_RESPOND_PINGS
       // respond to ping
       _fbv_msg(FBV_ACK, 6, (uint8_t*)FBV_PINGBACK);
 #endif
       return;
-    }
   }
 
   // receive and commit states

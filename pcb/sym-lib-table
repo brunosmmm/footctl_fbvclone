@@ -1,0 +1,4 @@
+(sym_lib_table
+  (lib (name LOCAL)(type Legacy)(uri ${KIPRJMOD}/LOCAL.lib)(options "")(descr ""))
+  (lib (name thvd1451)(type Legacy)(uri ${KIPRJMOD}/thvd1451.lib)(options "")(descr ""))
+)

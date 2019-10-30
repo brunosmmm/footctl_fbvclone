@@ -17,19 +17,28 @@
 #define VIRTUAL_RXSTATE_PRM 3
 #define VIRTUAL_MAX_BUFFER 32
 
+#define VIRTUAL_MIDI_RX_CMD 0
+#define VIRTUAL_MIDI_RX_CCPC 1
+#define VIRTUAL_MIDI_RX_VAL 2
+
 #define BUFFER_LEN_OFFSET 0
 #define BUFFER_CMD_OFFSET 1
 #define BUFFER_PRM_OFFSET 2
 
-typedef struct virtual_pod_s {
+#define MIDI_IS_CC(byte) ((byte & 0xF0) == 0xB0)
+#define MIDI_IS_PC(byte) ((byte & 0xF0) == 0xC0)
+
+    typedef struct virtual_pod_s {
   uint32_t flags;
   tick_t lastCycle;
-  uint8_t rxState;
-  uint8_t pendingBytes;
-  uint8_t wrPtr;
-  uint8_t rxBuffer[VIRTUAL_MAX_BUFFER];
-  uint8_t txBuffer[VIRTUAL_MAX_BUFFER];
+  uint8_t fbvRxState;
+  uint8_t fbvPendingBytes;
+  uint8_t fbvWrPtr;
+  uint8_t fbvRxBuffer[VIRTUAL_MAX_BUFFER];
+  uint8_t fbvTxBuffer[VIRTUAL_MAX_BUFFER];
   uint8_t txSize;
+  uint8_t midiRxState;
+  uint8_t midiRxBuffer[3];
 } VirtualPOD;
 
 static VirtualPOD pod;
@@ -57,24 +66,24 @@ static void _fbv_tx_many(uint8_t *bytes, uint8_t size) {
 }
 
 static void _fbv_queue_tx(uint8_t *bytes, uint8_t size) {
-  memcpy(pod.txBuffer, bytes, size);
+  memcpy(pod.fbvTxBuffer, bytes, size);
   pod.txSize = size;
   pod.flags |= VIRTUAL_FLAG_PACKET_TX;
 }
 
-static void _packet_received() {
-  printf("VPOD: packet received: 0xF0 ");
-  _dump_packet(pod.rxBuffer, pod.wrPtr);
+static void _fbv_packet_received() {
+  printf("VPOD: FBV packet received: 0xF0 ");
+  _dump_packet(pod.fbvRxBuffer, pod.fbvWrPtr);
 
   if (!(pod.flags & VIRTUAL_FLAG_CONNECTED)) {
-    if (pod.rxBuffer[BUFFER_CMD_OFFSET] == 0x90) {
+    if (pod.fbvRxBuffer[BUFFER_CMD_OFFSET] == 0x90) {
       // ping from FBV, send back a bunch of garbage and a pingback
       pod.flags |= VIRTUAL_FLAG_CONNECTED;
       _fbv_queue_tx((uint8_t *)pod_ping, 4);
     }
   } else {
     // normal operation
-    switch (pod.rxBuffer[BUFFER_CMD_OFFSET]) {
+    switch (pod.fbvRxBuffer[BUFFER_CMD_OFFSET]) {
     case 0x80:
       _fbv_queue_tx((uint8_t *)pod_ping, 4);
       break;
@@ -84,14 +93,16 @@ static void _packet_received() {
   }
 }
 
+static void _midi_packet_received()  {
+  printf("VPOD: MIDI packet received: 0xF0 ");
+  _dump_packet(pod.midiRxBuffer, MIDI_IS_PC(pod.midiRxBuffer[0]) ? 2 : 3);
+}
+
 void VIRTUAL_initialize(void) {
   printf("INFO: Virtual HW initialized\n");
+  memset(&pod, 0, sizeof(VirtualPOD));
   pod.flags = VIRTUAL_FLAG_STARTING;
-  pod.rxState = VIRTUAL_RXSTATE_INITIAL;
-  pod.pendingBytes = 0;
-  pod.lastCycle = 0;
-  pod.txSize = 0;
-  pod.wrPtr = 0;
+  pod.fbvRxState = VIRTUAL_RXSTATE_INITIAL;
 }
 
 void VIRTUAL_cycle(void) {
@@ -109,53 +120,84 @@ void VIRTUAL_cycle(void) {
   }
 
   if (pod.flags & VIRTUAL_FLAG_PACKET_TX) {
-    _fbv_tx_many(pod.txBuffer, pod.txSize);
+    _fbv_tx_many(pod.fbvTxBuffer, pod.txSize);
     pod.flags &= ~VIRTUAL_FLAG_PACKET_TX;
   }
   if (pod.flags & VIRTUAL_FLAG_PACKET_RX) {
-    _packet_received();
+    _fbv_packet_received();
     pod.flags &= ~VIRTUAL_FLAG_PACKET_RX;
   }
 
   pod.lastCycle = now;
 }
 
-
-
-void VIRTUAL_rxbyte(uint8_t byte) {
+void VIRTUAL_fbv_rxbyte(uint8_t byte) {
   if (pod.flags & VIRTUAL_FLAG_STARTING) {
     // ignore
     return;
   }
 
-  switch(pod.rxState) {
+  switch(pod.fbvRxState) {
   case VIRTUAL_RXSTATE_INITIAL:
     if (byte != 0xF0) {
       break;
     }
-    pod.rxState = VIRTUAL_RXSTATE_LEN;
+    pod.fbvRxState = VIRTUAL_RXSTATE_LEN;
     break;
   case VIRTUAL_RXSTATE_LEN:
-    pod.pendingBytes = byte;
-    pod.rxState = VIRTUAL_RXSTATE_CMD;
-    pod.rxBuffer[0] = byte;
-    pod.wrPtr = 1;
+    pod.fbvPendingBytes = byte;
+    pod.fbvRxState = VIRTUAL_RXSTATE_CMD;
+    pod.fbvRxBuffer[0] = byte;
+    pod.fbvWrPtr = 1;
     break;
   case VIRTUAL_RXSTATE_CMD:
-    pod.pendingBytes--;
-    pod.rxBuffer[pod.wrPtr++] = byte;
-    pod.rxState = VIRTUAL_RXSTATE_PRM;
+    pod.fbvPendingBytes--;
+    pod.fbvRxBuffer[pod.fbvWrPtr++] = byte;
+    pod.fbvRxState = VIRTUAL_RXSTATE_PRM;
     break;
   case VIRTUAL_RXSTATE_PRM:
-    pod.pendingBytes--;
-    pod.rxBuffer[pod.wrPtr++] = byte;
-    if (!pod.pendingBytes) {
-      pod.rxState = VIRTUAL_RXSTATE_INITIAL;
+    pod.fbvPendingBytes--;
+    pod.fbvRxBuffer[pod.fbvWrPtr++] = byte;
+    if (!pod.fbvPendingBytes) {
+      pod.fbvRxState = VIRTUAL_RXSTATE_INITIAL;
       pod.flags |= VIRTUAL_FLAG_PACKET_RX;
     }
     break;
   default:
-    pod.rxState = VIRTUAL_RXSTATE_INITIAL;
+    pod.fbvRxState = VIRTUAL_RXSTATE_INITIAL;
+    break;
+  }
+}
+
+void VIRTUAL_midi_rxbyte(uint8_t byte) {
+  if (pod.flags & VIRTUAL_FLAG_STARTING) {
+    // ignore
+    return;
+  }
+
+  switch(pod.midiRxState) {
+  case VIRTUAL_MIDI_RX_CMD:
+    if (MIDI_IS_CC(byte) || MIDI_IS_PC(byte)) {
+      pod.midiRxState = VIRTUAL_MIDI_RX_CCPC;
+      pod.midiRxBuffer[0] = byte;
+    }
+    break;
+  case VIRTUAL_MIDI_RX_CCPC:
+    pod.midiRxBuffer[1] = byte;
+    if (MIDI_IS_CC(pod.midiRxBuffer[0])) {
+      pod.midiRxState = VIRTUAL_MIDI_RX_VAL;
+    } else {
+      pod.midiRxState = VIRTUAL_MIDI_RX_CMD;
+      _midi_packet_received();
+    }
+    break;
+  case VIRTUAL_MIDI_RX_VAL:
+    pod.midiRxBuffer[2] = byte;
+    pod.midiRxState = VIRTUAL_MIDI_RX_CMD;
+    _midi_packet_received();
+    break;
+  default:
+    pod.midiRxState = VIRTUAL_MIDI_RX_CMD;
     break;
   }
 }

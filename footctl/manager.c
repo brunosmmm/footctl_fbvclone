@@ -249,13 +249,14 @@ static void _fbv_rx(FBVMessage msg) {
 static void _fbv_tx(uint8_t byte) {
 #ifdef VIRTUAL_HW
   printf("FBV TX: %hhx\n", byte);
-  VIRTUAL_rxbyte(byte);
+  VIRTUAL_fbv_rxbyte(byte);
 #endif
 }
 
 static void _pod_tx(uint8_t byte) {
 #ifdef VIRTUAL_HW
   printf("MIDI TX: %hhx\n", byte);
+  VIRTUAL_midi_rxbyte(byte);
 #endif
 }
 

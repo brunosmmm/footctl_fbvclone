@@ -51,7 +51,9 @@ static uint32_t _read_exp(void) {
 void BTNS_cycle(void) {
   unsigned int i = 0;
   uint32_t btn_state = 0;
-  if (TICK_get() - btns.lastCycle < BTN_POLL_INTERVAL) {
+  tick_t now = 0;
+  now = TICK_get();
+  if (now - btns.lastCycle < BTN_POLL_INTERVAL) {
     return;
   }
 
@@ -79,18 +81,22 @@ void BTNS_cycle(void) {
       }
     }
   }
+  btns.lastCycle = now;
 }
 
 void EXP_cycle(void) {
-  if (TICK_get() - _exp.lastCycle < EXP_POLL_INTERVAL) {
+  tick_t now = 0;
+  now = TICK_get();
+  if (now - _exp.lastCycle < EXP_POLL_INTERVAL) {
     return;
   }
   _exp.expValues = _read_exp();
+  _exp.lastCycle = now;
 }
 
 void LEDS_set_state(uint32_t led_states) {
 #ifdef VIRTUAL_HW
-  printf("SET LED STATES: %x\n", led_states);
+  // printf("SET LED STATES: %x\n", led_states);
 #endif
 }
 

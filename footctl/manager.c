@@ -344,10 +344,12 @@ static inline void _detect_exp_change(void) {
 
 void MANAGER_cycle(void) {
   static uint32_t lastPing = 0;
+  tick_t now = 0;
   uint32_t tmp = 0;
 
   // throttle main cycle
-  if ((TICK_get() - mgr.mainCycleTimer) < MAIN_LOOP_INTERVAL) {
+  now = TICK_get();
+  if ((now - mgr.mainCycleTimer) < MAIN_LOOP_INTERVAL) {
     return;
   }
 
@@ -392,6 +394,9 @@ void MANAGER_cycle(void) {
     // redraw
     mgr.flags &= ~FLAG_DISPLAY_DIRTY;
   }
+
+  // update cycle timer
+  mgr.mainCycleTimer = now;
 }
 
 // handle button events

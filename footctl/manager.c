@@ -41,10 +41,12 @@ static const PODTogglableFX POD_FX_CONTROLS[POD_FX_COUNT] =
 #define FLAG_PGM_UPDATE_1 0x08
 #define FLAG_PGM_UPDATE_2 0x10
 #define FLAG_PGM_UPDATE_3 0x20
+#define FLAG_TUNER_MODE 0x40
 
 #define POD_RESPOND_PINGS
 #define MAIN_LOOP_INTERVAL 10
 #define PROBE_INTERVAL_MULT 30
+#define BTN_HOLD_THRESH 50
 
 static const uint8_t FBV_PINGBACK[] = {0x00, 0x02, 0x00, 0x01, 0x01, 0x00};
 
@@ -57,6 +59,7 @@ typedef struct manager_s {
   char currentText[16];
   uint32_t mainCycleTimer;
   uint32_t btnStates;
+  uint8_t btnHoldCount[IO_BTN_COUNT];
 } Manager;
 
 static Manager mgr;
@@ -244,7 +247,6 @@ static void _pod_tx(uint8_t byte) {
 
 }
 
-
 void MANAGER_initialize(void) {
   PODStateMachineConfig podCfg;
   FBVStateMachineConfig fbvCfg;
@@ -264,6 +266,7 @@ void MANAGER_initialize(void) {
   mgr.btnStates = 0;
   memset(mgr.currentText, 0, 16);
   memset(mgr.currentProgram, 0, 3);
+  memset(mgr.btnHoldCount, 0, IO_LED_COUNT);
   mgr.flags = FLAG_WAIT_POD;
 }
 
@@ -273,6 +276,45 @@ static inline void _refresh_leds(void) {
   led_states |= mgr.otherLedState;
   led_states |= ((uint32_t)(mgr.fxState) << LED_COUNT);
   LEDS_set_state(led_states);
+}
+
+static void _btn_hold_evt(uint8_t btn) {
+  switch (btn) {
+  case BTN_TAP:
+    if (!(mgr.flags & FLAG_TUNER_MODE)) {
+      POD_enable_tuner();
+    }
+    break;
+  }
+}
+
+static void _detect_btn_hold(void) {
+  static uint32_t btn_states = 0;
+  static uint32_t holding = 0;
+  uint8_t i = 0;
+
+  for (i=0; i<IO_BTN_COUNT; i++) {
+    if ((btn_states & (1<<i)) ^ (mgr.btnStates & (1<<i))) {
+      // state changed
+      if (mgr.btnStates & (1<<i)) {
+        if (mgr.btnHoldCount[i] < BTN_HOLD_THRESH) {
+          mgr.btnHoldCount[i]++;
+        } else {
+          if (!(holding & (1<<i))) {
+            // trigger hold event only once
+            _btn_hold_evt(i);
+            holding |= (1 << i);
+          }
+        }
+      } else {
+        // reset count
+        mgr.btnHoldCount[i] = 0;
+        holding &= ~(1<<i);
+      }
+    }
+  }
+  // save last
+  btn_states = mgr.btnStates;
 }
 
 void MANAGER_cycle(void) {
@@ -314,6 +356,9 @@ void MANAGER_cycle(void) {
   // refresh led states
   _refresh_leds();
 
+  // manage button hold status
+  _detect_btn_hold();
+
   // trigger display redraw
   if (mgr.flags & FLAG_DISPLAY_DIRTY) {
     // redraw
@@ -328,6 +373,16 @@ void MANAGER_btn_event(uint8_t btn_id, uint8_t state) {
   if (mgr.flags & FLAG_WAIT_POD) {
     return;
   }
+
+  // if in tuner mode, any button disables tuner mode
+  if (mgr.flags & FLAG_TUNER_MODE) {
+    if (state) {
+      POD_disable_tuner();
+      mgr.flags &= ~FLAG_TUNER_MODE;
+    }
+    return ;
+  }
+
   // asynchronously dispatch messages
   if (state) {
     switch(btn_id) {

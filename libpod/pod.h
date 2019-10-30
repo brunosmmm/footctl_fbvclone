@@ -44,5 +44,6 @@ void POD_set_fx_state(PODTogglableFX fx, uint8_t state);
 void POD_enable_tuner(void);
 void POD_disable_tuner(void);
 void POD_change_program(uint8_t value);
+void POD_send_tap(void);
 
 #endif

@@ -43,8 +43,8 @@ static const PODTogglableFX POD_FX_CONTROLS[POD_FX_COUNT] =
 #define FLAG_PGM_UPDATE_3 0x20
 
 #define POD_RESPOND_PINGS
-#define MAIN_LOOP_INTERVAL 100
-#define PROBE_INTERVAL_MULT 3
+#define MAIN_LOOP_INTERVAL 10
+#define PROBE_INTERVAL_MULT 30
 
 static const uint8_t FBV_PINGBACK[] = {0x00, 0x02, 0x00, 0x01, 0x01, 0x00};
 
@@ -126,6 +126,19 @@ static void _pod_fx_set_state(uint8_t fxId, uint8_t state) {
 
   // emit MIDI message
   POD_set_fx_state(POD_FX_CONTROLS[fxId], state);
+}
+
+static void _pod_fx_toggle_state(uint8_t fxId) {
+  if (fxId > POD_FX_COUNT) {
+    return;
+  }
+
+  if (mgr.fxState & (1<<fxId)) {
+    _pod_fx_set_state(fxId, 0);
+  }
+  else {
+    _pod_fx_set_state(fxId, 1);
+  }
 }
 
 static inline void _pod_activate_program(uint8_t program) {
@@ -254,6 +267,14 @@ void MANAGER_initialize(void) {
   mgr.flags = FLAG_WAIT_POD;
 }
 
+static inline void _refresh_leds(void) {
+  uint32_t led_states = 0;
+
+  led_states |= mgr.otherLedState;
+  led_states |= ((uint32_t)(mgr.fxState) << LED_COUNT);
+  LEDS_set_state(led_states);
+}
+
 void MANAGER_cycle(void) {
   static uint32_t lastPing = 0;
   uint32_t tmp = 0;
@@ -289,11 +310,24 @@ void MANAGER_cycle(void) {
     // clear flags
     mgr.flags &= ~(FLAG_PGM_UPDATE_1|FLAG_PGM_UPDATE_2|FLAG_PGM_UPDATE_3);
   }
+
+  // refresh led states
+  _refresh_leds();
+
+  // trigger display redraw
+  if (mgr.flags & FLAG_DISPLAY_DIRTY) {
+    // redraw
+    mgr.flags &= ~FLAG_DISPLAY_DIRTY;
+  }
 }
 
 // handle button events
 void MANAGER_btn_event(uint8_t btn_id, uint8_t state) {
   uint8_t pgm = 0;
+  // disable presses if starting
+  if (mgr.flags & FLAG_WAIT_POD) {
+    return;
+  }
   // asynchronously dispatch messages
   if (state) {
     switch(btn_id) {
@@ -324,6 +358,24 @@ void MANAGER_btn_event(uint8_t btn_id, uint8_t state) {
         pgm = mgr.actualProgram - 4;
         _pod_activate_program(pgm);
       }
+      break;
+    case BTN_EQ:
+      _pod_fx_toggle_state(POD_FX_EQ);
+      break;
+    case BTN_MOD:
+      _pod_fx_toggle_state(POD_FX_MOD);
+      break;
+    case BTN_DLY:
+      _pod_fx_toggle_state(POD_FX_DLY);
+      break;
+    case BTN_STOMP:
+      _pod_fx_toggle_state(POD_FX_STOMP);
+      break;
+    case BTN_WAH:
+      _pod_fx_toggle_state(POD_FX_WAH);
+      break;
+    case BTN_TAP:
+      POD_send_tap();
       break;
     default:
       break;

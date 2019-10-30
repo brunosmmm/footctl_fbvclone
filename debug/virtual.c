@@ -8,6 +8,7 @@
 #define VIRTUAL_FLAG_CONNECTED 0x2
 #define VIRTUAL_FLAG_PACKET_TX 0x4
 #define VIRTUAL_FLAG_PACKET_RX 0x8
+#define VIRTUAL_FLAG_LOAD_INITIAL 0x10
 #define VIRTUAL_STARTUP_TIME 3000
 #define VIRTUAL_CYCLE_INTERVAL 10
 
@@ -15,7 +16,7 @@
 #define VIRTUAL_RXSTATE_LEN 1
 #define VIRTUAL_RXSTATE_CMD 2
 #define VIRTUAL_RXSTATE_PRM 3
-#define VIRTUAL_MAX_BUFFER 32
+#define VIRTUAL_MAX_BUFFER 128
 
 #define VIRTUAL_MIDI_RX_CMD 0
 #define VIRTUAL_MIDI_RX_CCPC 1
@@ -28,7 +29,10 @@
 #define MIDI_IS_CC(byte) ((byte & 0xF0) == 0xB0)
 #define MIDI_IS_PC(byte) ((byte & 0xF0) == 0xC0)
 
-    typedef struct virtual_pod_s {
+// default program is 1A
+#define VIRTUAL_DEFAULT_PROGRAM 1
+
+typedef struct virtual_pod_s {
   uint32_t flags;
   tick_t lastCycle;
   uint8_t fbvRxState;
@@ -39,10 +43,23 @@
   uint8_t txSize;
   uint8_t midiRxState;
   uint8_t midiRxBuffer[3];
+  uint8_t currentProgram;
 } VirtualPOD;
+
+typedef struct program_info_s {
+  char text[16];
+} ProgramInfo;
 
 static VirtualPOD pod;
 const static uint8_t pod_ping[4] = {0xF0, 0x02, 0x01, 0x00};
+
+#define VIRTUAL_PROGRAM_COUNT 5
+const static ProgramInfo programs[VIRTUAL_PROGRAM_COUNT] =
+  {{"Manual          "},
+   {"Program 1       "},
+   {"Program 2       "},
+   {"Program 3       "},
+   {"Program 4       "}};
 
 static void _dump_packet(uint8_t *packet, uint8_t size) {
   unsigned int i = 0;
@@ -71,6 +88,47 @@ static void _fbv_queue_tx(uint8_t *bytes, uint8_t size) {
   pod.flags |= VIRTUAL_FLAG_PACKET_TX;
 }
 
+static void _load_program(uint8_t program) {
+  uint8_t sendBuffer[64];
+  if (program == 0) {
+    // special case
+    return;
+  }
+
+  if (program > VIRTUAL_PROGRAM_COUNT-1) {
+    return;
+  }
+
+  // send out text change
+  sendBuffer[0] = 0xF0;
+  sendBuffer[1] = 0x13;
+  sendBuffer[2] = 0x10;
+  sendBuffer[3] = 0x00;
+  sendBuffer[4] = 0x10;
+  memcpy(sendBuffer+5, programs[program].text, 16);
+  // send out channel change
+  sendBuffer[21] = 0xF0;
+  sendBuffer[22] = 0x02;
+  sendBuffer[23] = 0x0C;
+  sendBuffer[24] = 'A' + (program - 1)%4;
+  // send out bank change (2 commands)
+  sendBuffer[25] = 0xF0;
+  sendBuffer[26] = 0x02;
+  sendBuffer[27] = 0x0A;
+  sendBuffer[28] = (program < 37) ? ' ' : '1';
+  sendBuffer[29] = 0xF0;
+  sendBuffer[30] = 0x02;
+  sendBuffer[31] = 0x0B;
+  sendBuffer[32] = ((program-1)/4) == 9 ? '0': '1' + (program - 1)/4;
+  // send out LED status (ALL)
+  _fbv_tx_many(sendBuffer, 33);
+  pod.currentProgram = program;
+}
+
+static void _change_control(uint8_t control, uint8_t value) {
+
+}
+
 static void _fbv_packet_received() {
   printf("VPOD: FBV packet received: 0xF0 ");
   _dump_packet(pod.fbvRxBuffer, pod.fbvWrPtr);
@@ -78,7 +136,7 @@ static void _fbv_packet_received() {
   if (!(pod.flags & VIRTUAL_FLAG_CONNECTED)) {
     if (pod.fbvRxBuffer[BUFFER_CMD_OFFSET] == 0x90) {
       // ping from FBV, send back a bunch of garbage and a pingback
-      pod.flags |= VIRTUAL_FLAG_CONNECTED;
+      pod.flags |= (VIRTUAL_FLAG_CONNECTED | VIRTUAL_FLAG_LOAD_INITIAL);
       _fbv_queue_tx((uint8_t *)pod_ping, 4);
     }
   } else {
@@ -96,6 +154,18 @@ static void _fbv_packet_received() {
 static void _midi_packet_received()  {
   printf("VPOD: MIDI packet received: 0xF0 ");
   _dump_packet(pod.midiRxBuffer, MIDI_IS_PC(pod.midiRxBuffer[0]) ? 2 : 3);
+
+  if (MIDI_IS_PC(pod.midiRxBuffer[0])) {
+    if (pod.midiRxBuffer[1] > 127) {
+      return;
+    }
+    _load_program(pod.midiRxBuffer[1]);
+  } else {
+    if (pod.midiRxBuffer[1] > 127 || pod.midiRxBuffer[2] > 127) {
+      return;
+    }
+    _change_control(pod.midiRxBuffer[1], pod.midiRxBuffer[2]);
+  }
 }
 
 void VIRTUAL_initialize(void) {
@@ -117,6 +187,11 @@ void VIRTUAL_cycle(void) {
 
   if (now - pod.lastCycle < VIRTUAL_CYCLE_INTERVAL) {
     return;
+  }
+
+  if (pod.flags & VIRTUAL_FLAG_LOAD_INITIAL) {
+    _load_program(VIRTUAL_DEFAULT_PROGRAM);
+    pod.flags &= ~VIRTUAL_FLAG_LOAD_INITIAL;
   }
 
   if (pod.flags & VIRTUAL_FLAG_PACKET_TX) {

@@ -216,6 +216,9 @@ static void _fbv_rx(FBVMessage msg) {
     if (strncmp((const char*)(msg.params+2), mgr.currentText, 16)) {
       memcpy(mgr.currentText, msg.params+2, 16);
       mgr.flags |= FLAG_DISPLAY_DIRTY;
+#ifdef VIRTUAL_HW
+      printf("VFBV: change text to '%s'\n", mgr.currentText);
+#endif
     }
     return;
   }
@@ -225,6 +228,9 @@ static void _fbv_rx(FBVMessage msg) {
     if (msg.params[0] != mgr.currentProgram[2]) {
       mgr.currentProgram[2] = msg.params[0];
       mgr.flags |= (FLAG_DISPLAY_DIRTY | FLAG_PGM_UPDATE_1);
+#ifdef VIRTUAL_HW
+      printf("VFBV: change channel to %c\n", mgr.currentProgram[2]);
+#endif
     }
     return;
   }
@@ -233,6 +239,9 @@ static void _fbv_rx(FBVMessage msg) {
     if (msg.params[0] != mgr.currentProgram[0]) {
       mgr.currentProgram[0] = msg.params[0];
       mgr.flags |= (FLAG_DISPLAY_DIRTY | FLAG_PGM_UPDATE_2);
+#ifdef VIRTUAL_HW
+      printf("VFBV: change prg digit 1 to '%c'\n", mgr.currentProgram[0]);
+#endif
     }
     return;
   }
@@ -241,6 +250,9 @@ static void _fbv_rx(FBVMessage msg) {
     if (msg.params[0] != mgr.currentProgram[1]) {
       mgr.currentProgram[1] = msg.params[0];
       mgr.flags |= (FLAG_DISPLAY_DIRTY | FLAG_PGM_UPDATE_3);
+#ifdef VIRTUAL_HW
+      printf("VFBV: change prg digit 2 to '%c'\n", mgr.currentProgram[1]);
+#endif
     }
     return;
   }

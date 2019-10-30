@@ -47,7 +47,7 @@ static const PODTogglableFX POD_FX_CONTROLS[POD_FX_COUNT] =
 #define FLAG_PGM_UPDATE_3 0x20
 #define FLAG_TUNER_MODE 0x40
 
-#define POD_RESPOND_PINGS
+// #define POD_RESPOND_PINGS
 #define MAIN_LOOP_INTERVAL 10
 #define PROBE_INTERVAL_MULT 30
 #define BTN_HOLD_THRESH 50
@@ -181,12 +181,14 @@ static void _fbv_rx(FBVMessage msg) {
   if (msg.msgType == FBV_PING) {
     if (mgr.flags & FLAG_WAIT_POD) {
       // done waiting
+      _fbv_msg(FBV_ACK, 6, (uint8_t *)FBV_PINGBACK);
       mgr.flags &= ~FLAG_WAIT_POD;
-    }
+    } else {
 #ifdef POD_RESPOND_PINGS
       // respond to ping
       _fbv_msg(FBV_ACK, 6, (uint8_t*)FBV_PINGBACK);
 #endif
+    }
       return;
   }
 

@@ -141,7 +141,7 @@ void FBV_send_msg(FBVMessage* msg) {
     // send header
     (fsm.cfg.msgTx)(0xF0);
     // send length
-    (fsm.cfg.msgTx)(msg->paramSize + 2);
+    (fsm.cfg.msgTx)(msg->paramSize + 1);
     // send command
     (fsm.cfg.msgTx)(msg->msgType);
     // send params

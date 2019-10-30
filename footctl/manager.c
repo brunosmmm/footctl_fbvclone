@@ -429,6 +429,11 @@ void MANAGER_btn_event(uint8_t btn_id, uint8_t state) {
     case BTN_WAH:
       _pod_fx_toggle_state(POD_FX_WAH);
       break;
+    default:
+      break;
+    }
+  } else {
+    switch(btn_id) {
     case BTN_TAP:
       POD_send_tap();
       break;

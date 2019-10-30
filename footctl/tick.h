@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <config.h>
 
-tick_t TIME_get(void);
+void TICK_initialize(void);
+tick_t TICK_get(void);
 
 #endif

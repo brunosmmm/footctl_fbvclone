@@ -1,5 +1,6 @@
 #include "manager.h"
 #include "io.h"
+#include "tick.h"
 #ifdef VIRTUAL_HW
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,6 +13,7 @@ int main(void) {
 #endif
 
   // initialize
+  TICK_initialize();
   MANAGER_initialize();
   BTNS_initialize(MANAGER_btn_event);
   EXP_initialize();

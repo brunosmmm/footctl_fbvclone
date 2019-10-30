@@ -1,6 +1,6 @@
 #include "io.h"
 #include "config.h"
-#include "time.h"
+#include "tick.h"
 #include <string.h>
 #ifdef VIRTUAL_HW
 #include <stdio.h>
@@ -51,7 +51,7 @@ static uint32_t _read_exp(void) {
 void BTNS_cycle(void) {
   unsigned int i = 0;
   uint32_t btn_state = 0;
-  if (TIME_get() - btns.lastCycle < BTN_POLL_INTERVAL) {
+  if (TICK_get() - btns.lastCycle < BTN_POLL_INTERVAL) {
     return;
   }
 
@@ -82,7 +82,7 @@ void BTNS_cycle(void) {
 }
 
 void EXP_cycle(void) {
-  if (TIME_get() - _exp.lastCycle < EXP_POLL_INTERVAL) {
+  if (TICK_get() - _exp.lastCycle < EXP_POLL_INTERVAL) {
     return;
   }
   _exp.expValues = _read_exp();

@@ -3,7 +3,7 @@
 #include "config.h"
 #include "manager.h"
 #include "io.h"
-#include "time.h"
+#include "tick.h"
 #include <string.h>
 #ifdef VIRTUAL_HW
 #include <stdio.h>
@@ -347,7 +347,7 @@ void MANAGER_cycle(void) {
   uint32_t tmp = 0;
 
   // throttle main cycle
-  if ((TIME_get() - mgr.mainCycleTimer) < MAIN_LOOP_INTERVAL) {
+  if ((TICK_get() - mgr.mainCycleTimer) < MAIN_LOOP_INTERVAL) {
     return;
   }
 

@@ -3,6 +3,7 @@
 #include "config.h"
 #include "manager.h"
 #include "io.h"
+#include "time.h"
 #include <string.h>
 
 // setup togglable FX bits for internal state
@@ -37,6 +38,9 @@ static const PODTogglableFX POD_FX_CONTROLS[POD_FX_COUNT] =
 #define FLAG_WAIT_POD 0x01
 #define FLAG_POD_ALIVE 0x02
 #define FLAG_DISPLAY_DIRTY 0x04
+#define FLAG_PGM_UPDATE_1 0x08
+#define FLAG_PGM_UPDATE_2 0x10
+#define FLAG_PGM_UPDATE_3 0x20
 
 #define POD_RESPOND_PINGS
 #define MAIN_LOOP_INTERVAL 100
@@ -48,10 +52,11 @@ typedef struct manager_s {
   uint8_t fxState;
   uint8_t otherLedState;
   uint8_t flags;
-  uint8_t currentChannel;
+  uint8_t actualProgram;
   char currentProgram[3];
   char currentText[16];
   uint32_t mainCycleTimer;
+  uint32_t btnStates;
 } Manager;
 
 static Manager mgr;
@@ -123,6 +128,10 @@ static void _pod_fx_set_state(uint8_t fxId, uint8_t state) {
   POD_set_fx_state(POD_FX_CONTROLS[fxId], state);
 }
 
+static inline void _pod_activate_program(uint8_t program) {
+  POD_change_program(program);
+}
+
 static inline uint8_t _pod_fx_get_state(uint8_t fxId) {
   if (fxId > POD_FX_COUNT) {
     return 0;
@@ -192,8 +201,7 @@ static void _fbv_rx(FBVMessage msg) {
   if (msg.msgType == FBV_SET_CH) {
     if (msg.params[0] != mgr.currentProgram[2]) {
       mgr.currentProgram[2] = msg.params[0];
-      mgr.currentChannel = (uint8_t)(msg.params[0] - 'A');
-      mgr.flags |= FLAG_DISPLAY_DIRTY;
+      mgr.flags |= (FLAG_DISPLAY_DIRTY | FLAG_PGM_UPDATE_1);
     }
     return;
   }
@@ -201,7 +209,7 @@ static void _fbv_rx(FBVMessage msg) {
   if (msg.msgType == FBV_SET_BNK1) {
     if (msg.params[0] != mgr.currentProgram[0]) {
       mgr.currentProgram[0] = msg.params[0];
-      mgr.flags |= FLAG_DISPLAY_DIRTY;
+      mgr.flags |= (FLAG_DISPLAY_DIRTY | FLAG_PGM_UPDATE_2);
     }
     return;
   }
@@ -209,7 +217,7 @@ static void _fbv_rx(FBVMessage msg) {
   if (msg.msgType == FBV_SET_BNK2) {
     if (msg.params[0] != mgr.currentProgram[1]) {
       mgr.currentProgram[1] = msg.params[0];
-      mgr.flags |= FLAG_DISPLAY_DIRTY;
+      mgr.flags |= (FLAG_DISPLAY_DIRTY | FLAG_PGM_UPDATE_3);
     }
     return;
   }
@@ -223,10 +231,6 @@ static void _pod_tx(uint8_t byte) {
 
 }
 
-static uint32_t _get_time(void) {
-  // get current time
-  return 0;
-}
 
 void MANAGER_initialize(void) {
   PODStateMachineConfig podCfg;
@@ -244,6 +248,7 @@ void MANAGER_initialize(void) {
   mgr.mainCycleTimer = 0;
   mgr.fxState = 0;
   mgr.otherLedState = 0;
+  mgr.btnStates = 0;
   memset(mgr.currentText, 0, 16);
   memset(mgr.currentProgram, 0, 3);
   mgr.flags = FLAG_WAIT_POD;
@@ -251,9 +256,10 @@ void MANAGER_initialize(void) {
 
 void MANAGER_cycle(void) {
   static uint32_t lastPing = 0;
+  uint32_t tmp = 0;
 
   // throttle main cycle
-  if ((_get_time() - mgr.mainCycleTimer) < MAIN_LOOP_INTERVAL) {
+  if ((TIME_get() - mgr.mainCycleTimer) < MAIN_LOOP_INTERVAL) {
     return;
   }
 
@@ -271,8 +277,63 @@ void MANAGER_cycle(void) {
   else {
     lastPing = 0;
   }
+
+  // trigger program number update
+  if (mgr.flags & (FLAG_PGM_UPDATE_1|FLAG_PGM_UPDATE_2|FLAG_PGM_UPDATE_3)) {
+    // calculate actual program number
+    tmp += (mgr.currentProgram[0] == 0x20 ? 0: 10*(mgr.currentProgram[0] - '0'));
+    tmp += (mgr.currentProgram[1] - '1');
+    tmp *= 4;
+    tmp += (mgr.currentProgram[2] - 'A');
+    mgr.actualProgram = tmp;
+    // clear flags
+    mgr.flags &= ~(FLAG_PGM_UPDATE_1|FLAG_PGM_UPDATE_2|FLAG_PGM_UPDATE_3);
+  }
 }
 
+// handle button events
 void MANAGER_btn_event(uint8_t btn_id, uint8_t state) {
+  uint8_t pgm = 0;
+  // asynchronously dispatch messages
+  if (state) {
+    switch(btn_id) {
+    case BTN_CHA:
+      pgm = mgr.actualProgram / 4;
+      _pod_activate_program(pgm);
+      break;
+    case BTN_CHB:
+      pgm = mgr.actualProgram / 4 + 1;
+      _pod_activate_program(pgm);
+      break;
+    case BTN_CHC:
+      pgm = mgr.actualProgram / 4 + 2;
+      _pod_activate_program(pgm);
+      break;
+    case BTN_CHD:
+      pgm = mgr.actualProgram / 4 + 3;
+      _pod_activate_program(pgm);
+      break;
+    case BTN_UP:
+      if (pgm/4 < 15) {
+        pgm = mgr.actualProgram + 4;
+        _pod_activate_program(pgm);
+      }
+      break;
+    case BTN_DN:
+      if (pgm/4 > 0) {
+        pgm = mgr.actualProgram - 4;
+        _pod_activate_program(pgm);
+      }
+      break;
+    default:
+      break;
+    }
+  }
 
+  // update local states
+  if (state) {
+    mgr.btnStates |= (1<<btn_id);
+  } else {
+    mgr.btnStates &= ~(1<<btn_id);
+  }
 }

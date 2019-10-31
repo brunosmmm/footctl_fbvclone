@@ -83,6 +83,14 @@ static const FBVLED led_mapping[VIRTUAL_FX_COUNT] =
    FBV_LED_WAH
   };
 
+static const FBVLED ch_led_mapping[4] =
+  {
+   FBV_LED_CHA,
+   FBV_LED_CHB,
+   FBV_LED_CHC,
+   FBV_LED_CHD
+  };
+
 static void _dump_packet(uint8_t *packet, uint8_t size) {
   unsigned int i = 0;
   for (i = 0; i < size; i++) {
@@ -123,29 +131,45 @@ static void _load_program(uint8_t program) {
   }
 
   // send out text change
-  sendBuffer[0] = 0xF0;
-  sendBuffer[1] = 0x13;
-  sendBuffer[2] = 0x10;
-  sendBuffer[3] = 0x00;
-  sendBuffer[4] = 0x10;
+  sendBuffer[count++] = 0xF0;
+  sendBuffer[count++] = 0x13;
+  sendBuffer[count++] = 0x10;
+  sendBuffer[count++] = 0x00;
+  sendBuffer[count++] = 0x10;
   memcpy(sendBuffer+5, programs[program].text, 16);
+  count += 16;
   // send out channel change
-  sendBuffer[21] = 0xF0;
-  sendBuffer[22] = 0x02;
-  sendBuffer[23] = 0x0C;
-  sendBuffer[24] = 'A' + (program - 1)%4;
+  sendBuffer[count++] = 0xF0;
+  sendBuffer[count++] = 0x02;
+  sendBuffer[count++] = 0x0C;
+  sendBuffer[count++] = 'A' + (program - 1)%4;
   // send out bank change (2 commands)
-  sendBuffer[25] = 0xF0;
-  sendBuffer[26] = 0x02;
-  sendBuffer[27] = 0x0A;
-  sendBuffer[28] = (program < 37) ? ' ' : '1';
-  sendBuffer[29] = 0xF0;
-  sendBuffer[30] = 0x02;
-  sendBuffer[31] = 0x0B;
-  sendBuffer[32] = ((program-1)/4) == 9 ? '0': '1' + (program - 1)/4;
+  sendBuffer[count++] = 0xF0;
+  sendBuffer[count++] = 0x02;
+  sendBuffer[count++] = 0x0A;
+  sendBuffer[count++] = (program < 37) ? ' ' : '1';
+  sendBuffer[count++] = 0xF0;
+  sendBuffer[count++] = 0x02;
+  sendBuffer[count++] = 0x0B;
+  sendBuffer[count++] = ((program-1)/4) == 9 ? '0': '1' + (program - 1)/4;
   // send out LED status (diff)
 
-  count = 33;
+  if (program > 0) {
+    sendBuffer[count++] = 0xF0;
+    sendBuffer[count++] = 0x03;
+    sendBuffer[count++] = 0x04;
+    sendBuffer[count++] = ch_led_mapping[(program-1)%4];
+    sendBuffer[count++] = 0x01;
+  }
+
+  if (!(pod.flags & VIRTUAL_FLAG_LOAD_INITIAL) && pod.currentProgram > 0) {
+    // must also turn off previous channel LED
+    sendBuffer[count++] = 0xF0;
+    sendBuffer[count++] = 0x03;
+    sendBuffer[count++] = 0x04;
+    sendBuffer[count++] = ch_led_mapping[(pod.currentProgram-1)%4];
+  }
+
   for (i = 0; i < VIRTUAL_FX_COUNT; i++) {
     if ((pod.fxStates & (1<<i)) ^ (programs[program].fxStates & (1<<i))) {
       // fx state changed

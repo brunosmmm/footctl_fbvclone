@@ -41,6 +41,14 @@
 #define VIRTUAL_FX_WAH 0x40
 #define VIRTUAL_FX_COUNT 7
 
+#define VIRTUAL_FX_EQ_IDX 0
+#define VIRTUAL_FX_MOD_IDX 1
+#define VIRTUAL_FX_STOMP_IDX 2
+#define VIRTUAL_FX_DLY_IDX 3
+#define VIRTUAL_FX_AMP_IDX 4
+#define VIRTUAL_FX_GATE_IDX 5
+#define VIRTUAL_FX_WAH_IDX 6
+
 typedef struct virtual_pod_s {
   uint32_t flags;
   tick_t lastCycle;
@@ -180,9 +188,11 @@ static void _load_program(uint8_t program) {
       if ((programs[program].fxStates & (1<<i))) {
         // send ON
         sendBuffer[count++] = 1;
+        pod.fxStates |= (1<<i);
       } else {
         // send OFF
         sendBuffer[count++] = 0;
+        pod.fxStates &= ~(1<<i);
       }
     }
   }
@@ -191,8 +201,60 @@ static void _load_program(uint8_t program) {
   pod.currentProgram = program;
 }
 
-static void _change_control(uint8_t control, uint8_t value) {
+static void _change_fx_state(uint8_t fxId, uint8_t state, uint8_t fbv_send) {
+  uint8_t sendBuffer[5];
+  if (state) {
+    pod.fxStates |= (1<<fxId);
+  } else {
+    pod.fxStates &= ~(1<<fxId);
+  }
+  if (fbv_send) {
+    sendBuffer[0] = 0xF0; sendBuffer[1] = 0x03; sendBuffer[2] = 0x04;
+    sendBuffer[3] = led_mapping[fxId]; sendBuffer[4] = state ? 1 : 0;
+    _fbv_queue_tx(sendBuffer, 5);
+  }
+}
 
+static void _change_control(uint8_t control, uint8_t value) {
+  switch(control) {
+  case BOD_CTL_MOD_EN:
+    if (value > 63) {
+      _change_fx_state(VIRTUAL_FX_MOD_IDX, 1, 1);
+    } else {
+      _change_fx_state(VIRTUAL_FX_MOD_IDX, 0, 1);
+    }
+    break;
+  case BOD_CTL_DLY_EN:
+    if (value > 63) {
+      _change_fx_state(VIRTUAL_FX_DLY_IDX, 1, 1);
+    } else {
+      _change_fx_state(VIRTUAL_FX_DLY_IDX, 0, 1);
+    }
+    break;
+  case BOD_CTL_STOMP_EN:
+    if (value > 63) {
+      _change_fx_state(VIRTUAL_FX_STOMP_IDX, 1, 1);
+    } else {
+      _change_fx_state(VIRTUAL_FX_STOMP_IDX, 0, 1);
+    }
+    break;
+  case BOD_CTL_WAH_EN:
+    if (value > 63) {
+      _change_fx_state(VIRTUAL_FX_WAH_IDX, 1, 1);
+    } else {
+      _change_fx_state(VIRTUAL_FX_WAH_IDX, 0, 1);
+    }
+    break;
+  case BOD_CTL_EQ_ENABLE:
+    if (value > 63) {
+      _change_fx_state(VIRTUAL_FX_EQ_IDX, 1, 1);
+    } else {
+      _change_fx_state(VIRTUAL_FX_EQ_IDX, 0, 1);
+    }
+    break;
+  default:
+    break;
+  }
 }
 
 static void _fbv_packet_received() {

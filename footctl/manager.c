@@ -208,6 +208,9 @@ static void _fbv_rx(FBVMessage msg) {
         _set_led_state(temp, msg.params[1]);
       }
     }
+#ifdef VIRTUAL_HW
+    printf("VFBV: set LED 0x%hhx to %s\n", msg.params[0], msg.params[1] ? "ON": "OFF");
+#endif
     return;
   }
 
@@ -280,7 +283,7 @@ void MANAGER_initialize(void) {
   fbvCfg.msgRx = _fbv_rx;
   fbvCfg.msgTx = _fbv_tx;
   podCfg.msgTx = _pod_tx;
-  podCfg.channel = POD_MID_CHANNEL;
+  podCfg.channel = POD_MIDI_CHANNEL;
 
   // initialize
   FBV_initialize(&fbvCfg);

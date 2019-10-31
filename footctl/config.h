@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include "ctltypes.h"
 
-#define POD_MID_CHANNEL 1
+#define POD_MIDI_CHANNEL 1
 #define IO_BTN_COUNT 12
 #define IO_LED_COUNT 10
 

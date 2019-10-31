@@ -32,6 +32,15 @@
 // default program is 1A
 #define VIRTUAL_DEFAULT_PROGRAM 1
 
+#define VIRTUAL_FX_EQ 0x1
+#define VIRTUAL_FX_MOD 0x2
+#define VIRTUAL_FX_STOMP 0x4
+#define VIRTUAL_FX_DLY 0x8
+#define VIRTUAL_FX_AMP 0x10
+#define VIRTUAL_FX_GATE 0x20
+#define VIRTUAL_FX_WAH 0x40
+#define VIRTUAL_FX_COUNT 7
+
 typedef struct virtual_pod_s {
   uint32_t flags;
   tick_t lastCycle;
@@ -44,22 +53,35 @@ typedef struct virtual_pod_s {
   uint8_t midiRxState;
   uint8_t midiRxBuffer[3];
   uint8_t currentProgram;
+  uint32_t fxStates;
 } VirtualPOD;
 
 typedef struct program_info_s {
   char text[16];
+  uint32_t fxStates;
 } ProgramInfo;
 
 static VirtualPOD pod;
 const static uint8_t pod_ping[4] = {0xF0, 0x02, 0x01, 0x00};
 
 #define VIRTUAL_PROGRAM_COUNT 5
-const static ProgramInfo programs[VIRTUAL_PROGRAM_COUNT] =
-  {{"Manual          "},
-   {"Program 1       "},
-   {"Program 2       "},
-   {"Program 3       "},
-   {"Program 4       "}};
+static const ProgramInfo programs[VIRTUAL_PROGRAM_COUNT] = {
+    {"Manual          ", 0x00},
+    {"Program 1       ", (VIRTUAL_FX_EQ | VIRTUAL_FX_MOD | VIRTUAL_FX_AMP)},
+    {"Program 2       ", (VIRTUAL_FX_EQ | VIRTUAL_FX_DLY | VIRTUAL_FX_AMP)},
+    {"Program 3       ", (VIRTUAL_FX_WAH | VIRTUAL_FX_AMP)},
+    {"Program 4       ", (VIRTUAL_FX_GATE | VIRTUAL_FX_AMP | VIRTUAL_FX_STOMP | VIRTUAL_FX_EQ | VIRTUAL_FX_MOD)}};
+
+static const FBVLED led_mapping[VIRTUAL_FX_COUNT] =
+  {
+   FBV_LED_SB2,
+   FBV_LED_MOD,
+   FBV_LED_SB1,
+   FBV_LED_DLY,
+   FBV_LED_AMP,
+   FBV_LED_SB3,
+   FBV_LED_WAH
+  };
 
 static void _dump_packet(uint8_t *packet, uint8_t size) {
   unsigned int i = 0;
@@ -89,7 +111,8 @@ static void _fbv_queue_tx(uint8_t *bytes, uint8_t size) {
 }
 
 static void _load_program(uint8_t program) {
-  uint8_t sendBuffer[64];
+  uint8_t sendBuffer[128];
+  unsigned int i = 0, count = 0;
   if (program == 0) {
     // special case
     return;
@@ -120,8 +143,27 @@ static void _load_program(uint8_t program) {
   sendBuffer[30] = 0x02;
   sendBuffer[31] = 0x0B;
   sendBuffer[32] = ((program-1)/4) == 9 ? '0': '1' + (program - 1)/4;
-  // send out LED status (ALL)
-  _fbv_tx_many(sendBuffer, 33);
+  // send out LED status (diff)
+
+  count = 33;
+  for (i = 0; i < VIRTUAL_FX_COUNT; i++) {
+    if ((pod.fxStates & (1<<i)) ^ (programs[program].fxStates & (1<<i))) {
+      // fx state changed
+      sendBuffer[count++] = 0xF0;
+      sendBuffer[count++] = 0x03;
+      sendBuffer[count++] = 0x04;
+      sendBuffer[count++] = led_mapping[i];
+      if ((programs[program].fxStates & (1<<i))) {
+        // send ON
+        sendBuffer[count++] = 1;
+      } else {
+        // send OFF
+        sendBuffer[count++] = 0;
+      }
+    }
+  }
+
+  _fbv_tx_many(sendBuffer, count);
   pod.currentProgram = program;
 }
 

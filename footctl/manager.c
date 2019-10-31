@@ -119,7 +119,7 @@ static void _fbv_msg(FBVMessageType cmd, uint8_t paramSize, uint8_t* params) {
   FBV_send_msg(&msg);
 }
 
-static void _pod_fx_set_state(uint8_t fxId, uint8_t state) {
+static void _pod_fx_set_state(uint8_t fxId, uint8_t state, uint8_t user) {
   if (fxId > POD_FX_COUNT) {
     return;
   }
@@ -133,19 +133,21 @@ static void _pod_fx_set_state(uint8_t fxId, uint8_t state) {
   }
 
   // emit MIDI message
-  POD_set_fx_state(POD_FX_CONTROLS[fxId], state);
+  if (user) {
+    POD_set_fx_state(POD_FX_CONTROLS[fxId], state);
+  }
 }
 
-static void _pod_fx_toggle_state(uint8_t fxId) {
+static void _pod_fx_toggle_state(uint8_t fxId, uint8_t user) {
   if (fxId > POD_FX_COUNT) {
     return;
   }
 
   if (mgr.fxState & (1<<fxId)) {
-    _pod_fx_set_state(fxId, 0);
+    _pod_fx_set_state(fxId, 0, user);
   }
   else {
-    _pod_fx_set_state(fxId, 1);
+    _pod_fx_set_state(fxId, 1, user);
   }
 }
 
@@ -199,7 +201,7 @@ static void _fbv_rx(FBVMessage msg) {
     if (temp != POD_INVALID_FX) {
       if (_pod_fx_get_state(temp) != msg.params[1]) {
         // only emit state changes if state is actually different
-        _pod_fx_set_state(temp, msg.params[1]);
+        _pod_fx_set_state(temp, msg.params[1], 0);
       }
     }
     else {
@@ -468,19 +470,19 @@ void MANAGER_btn_event(uint8_t btn_id, uint8_t state) {
       }
       break;
     case BTN_EQ:
-      _pod_fx_toggle_state(POD_FX_EQ);
+      _pod_fx_toggle_state(POD_FX_EQ, 1);
       break;
     case BTN_MOD:
-      _pod_fx_toggle_state(POD_FX_MOD);
+      _pod_fx_toggle_state(POD_FX_MOD, 1);
       break;
     case BTN_DLY:
-      _pod_fx_toggle_state(POD_FX_DLY);
+      _pod_fx_toggle_state(POD_FX_DLY, 1);
       break;
     case BTN_STOMP:
-      _pod_fx_toggle_state(POD_FX_STOMP);
+      _pod_fx_toggle_state(POD_FX_STOMP, 1);
       break;
     case BTN_WAH:
-      _pod_fx_toggle_state(POD_FX_WAH);
+      _pod_fx_toggle_state(POD_FX_WAH, 1);
       break;
     default:
       break;

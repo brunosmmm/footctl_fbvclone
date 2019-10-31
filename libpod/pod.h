@@ -8,8 +8,8 @@
 
 typedef enum pod_message_type_e
   {
-   POD_CONTROL_CHANGE = 0x0B,
-   POD_PROGRAM_CHANGE = 0x0C
+   POD_CONTROL_CHANGE = 0xB0,
+   POD_PROGRAM_CHANGE = 0xC0
   } PODMessageType;
 
 typedef enum pod_fx_e

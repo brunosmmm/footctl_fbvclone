@@ -2067,4 +2067,28 @@ Wire Wire Line
 Connection ~ 550  2150
 Wire Wire Line
 	550  2150 550  2400
+Wire Wire Line
+	8750 1800 8550 1800
+$Comp
+L power:GNDD #PWR?
+U 1 1 5DD50CFC
+P 8550 1800
+F 0 "#PWR?" H 8550 1550 50  0001 C CNN
+F 1 "GNDD" V 8554 1690 50  0000 R CNN
+F 2 "" H 8550 1800 50  0001 C CNN
+F 3 "" H 8550 1800 50  0001 C CNN
+	1    8550 1800
+	0    1    1    0   
+$EndComp
+NoConn ~ 8750 2000
+NoConn ~ 8750 2100
+NoConn ~ 8750 2500
+NoConn ~ 8750 2600
+NoConn ~ 8750 2700
+NoConn ~ 8750 3200
+NoConn ~ 8750 3300
+NoConn ~ 8750 3400
+NoConn ~ 8750 3700
+NoConn ~ 8750 3800
+NoConn ~ 9950 4400
 $EndSCHEMATC

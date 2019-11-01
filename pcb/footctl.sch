@@ -934,17 +934,6 @@ Wire Wire Line
 	1500 1450 1250 1450
 Wire Wire Line
 	1250 1450 1250 1100
-$Comp
-L power:+3.3V #PWR0117
-U 1 1 5DB19C50
-P 1250 1100
-F 0 "#PWR0117" H 1250 950 50  0001 C CNN
-F 1 "+3.3V" H 1265 1273 50  0000 C CNN
-F 2 "" H 1250 1100 50  0001 C CNN
-F 3 "" H 1250 1100 50  0001 C CNN
-	1    1250 1100
-	1    0    0    -1  
-$EndComp
 Wire Wire Line
 	1500 1750 1250 1750
 Wire Wire Line
@@ -977,10 +966,8 @@ TX-
 Text Label 2850 1750 2    50   ~ 0
 TX+
 Wire Wire Line
-	1000 1550 1100 1550
-Wire Wire Line
 	1000 1650 1500 1650
-Text Label 1000 1550 0    50   ~ 0
+Text Label 850  2550 1    50   ~ 0
 RX
 Text Label 1000 1650 0    50   ~ 0
 TX
@@ -2019,4 +2006,65 @@ F 3 "" H 10750 5250 50  0001 C CNN
 	1    10750 5250
 	0    -1   -1   0   
 $EndComp
+$Comp
+L power:VDD #PWR0117
+U 1 1 5DBE9315
+P 1250 1000
+F 0 "#PWR0117" H 1250 850 50  0001 C CNN
+F 1 "VDD" H 1267 1173 50  0000 C CNN
+F 2 "" H 1250 1000 50  0001 C CNN
+F 3 "" H 1250 1000 50  0001 C CNN
+	1    1250 1000
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	1250 1000 1250 1100
+Wire Wire Line
+	850  1550 850  1950
+Wire Wire Line
+	850  1550 1100 1550
+$Comp
+L Device:R R10
+U 1 1 5DC837E1
+P 550 2550
+F 0 "R10" H 620 2596 50  0000 L CNN
+F 1 "10k" H 620 2505 50  0000 L CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 480 2550 50  0001 C CNN
+F 3 "~" H 550 2550 50  0001 C CNN
+	1    550  2550
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	550  2700 550  2800
+Wire Wire Line
+	550  2800 850  2800
+Wire Wire Line
+	850  2350 850  2800
+$Comp
+L power:+3.3V #PWR0150
+U 1 1 5DCFBCE6
+P 550 1950
+F 0 "#PWR0150" H 550 1800 50  0001 C CNN
+F 1 "+3.3V" H 565 2123 50  0000 C CNN
+F 2 "" H 550 1950 50  0001 C CNN
+F 3 "" H 550 1950 50  0001 C CNN
+	1    550  1950
+	1    0    0    -1  
+$EndComp
+$Comp
+L Transistor_FET:2N7002 Q1
+U 1 1 5DD163C4
+P 750 2150
+F 0 "Q1" H 956 2196 50  0000 L CNN
+F 1 "2N7002" H 956 2105 50  0000 L CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 950 2075 50  0001 L CIN
+F 3 "https://www.fairchildsemi.com/datasheets/2N/2N7002.pdf" H 750 2150 50  0001 L CNN
+	1    750  2150
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	550  1950 550  2150
+Connection ~ 550  2150
+Wire Wire Line
+	550  2150 550  2400
 $EndSCHEMATC

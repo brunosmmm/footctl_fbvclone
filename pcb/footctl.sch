@@ -846,8 +846,6 @@ Wire Wire Line
 	5500 1600 6050 1600
 Text Label 5500 1400 0    50   ~ 0
 LCDE
-Text Label 5500 1500 0    50   ~ 0
-LCDRW
 Text Label 5500 1600 0    50   ~ 0
 LCDRS
 NoConn ~ 6050 1900
@@ -1593,8 +1591,6 @@ Wire Wire Line
 Text Label 8350 4200 2    50   ~ 0
 IO1
 Wire Wire Line
-	8750 2200 8350 2200
-Wire Wire Line
 	8750 2300 8350 2300
 Wire Wire Line
 	8350 4300 7850 4300
@@ -1658,8 +1654,6 @@ Text Label 8100 3200 2    50   ~ 0
 IO10
 Text Label 8350 2300 0    50   ~ 0
 LCDRS
-Text Label 8350 2200 0    50   ~ 0
-LCDRW
 Text Label 10550 4100 2    50   ~ 0
 LCDE
 Text Label 10550 4000 2    50   ~ 0
@@ -2091,4 +2085,16 @@ NoConn ~ 8750 3400
 NoConn ~ 8750 3700
 NoConn ~ 8750 3800
 NoConn ~ 9950 4400
+NoConn ~ 8750 2200
+$Comp
+L power:GNDD #PWR?
+U 1 1 5DC15D0D
+P 5500 1500
+F 0 "#PWR?" H 5500 1250 50  0001 C CNN
+F 1 "GNDD" V 5504 1390 50  0000 R CNN
+F 2 "" H 5500 1500 50  0001 C CNN
+F 3 "" H 5500 1500 50  0001 C CNN
+	1    5500 1500
+	0    1    1    0   
+$EndComp
 $EndSCHEMATC

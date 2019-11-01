@@ -4,8 +4,7 @@ BUILD_DIR = bin
 SHARED_DIR = ../libfbv ../libpod
 CFILES = footctl.c fbv.c pod.c manager.c io.c tick.c
 
-# TODO - you will need to edit these two lines!
-DEVICE=stm32f030c8
+DEVICE ?= stm32f030c8
 # OOCD_FILE = board/stm32f4discovery.cfg
 
 # You shouldn't have to edit anything below here.

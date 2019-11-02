@@ -1,5 +1,6 @@
 #include "stm32.h"
 #include "config.h"
+#include <libopencm3/cm3/systick.h>
 
 #ifdef STM32_MOCK
 #define INITIALIZE_LED_GPIO(LEDNUM)                                   \
@@ -32,6 +33,20 @@
 #endif
 
 void SYSTEM_initialize(void) {
+
+  // clock setup
+#ifdef STM32_MOCK
+  rcc_clock_setup_in_hse_16mhz_out_72mhz();
+#else
+  rcc_clock_setup_in_hsi_out_48mhz();
+#endif
+  systick_set_clocksource(STK_CSR_CLKSOURCE_AHB_DIV8);
+#ifdef STM32_MOCK
+  systick_set_reload(8999);
+#else
+  systick_set_reload(5999);
+#endif
+
   // enable clocks
   rcc_periph_clock_enable(RCC_USART1);
   rcc_periph_clock_enable(RCC_USART2);
@@ -121,6 +136,11 @@ void SYSTEM_initialize(void) {
   usart_set_mode(USART2, USART_MODE_TX);
   usart_set_flow_control(USART2, USART_FLOWCONTROL_NONE);
 
+  // enable tick
+  systick_interrupt_enable();
+  systick_counter_enable();
+
   usart_enable(USART1);
   usart_enable(USART2);
+
 }

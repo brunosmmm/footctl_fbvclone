@@ -15,12 +15,17 @@ static inline struct timespec timeDiff(struct timespec oldTime, struct timespec 
       tv_nsec : time.tv_nsec - oldTime.tv_nsec
     };
 }
+#else
+#include <libopencm3/cm3/nvic.h>
+static tick_t counter = 0;
 #endif
 
 void TICK_initialize(void) {
 #ifdef VIRTUAL_HW
   printf("INFO: initializing TIME module\n");
   clock_gettime(CLOCK_MONOTONIC, &_VHW_initial_time);
+#else
+  counter = 0;
 #endif
 }
 
@@ -33,6 +38,14 @@ tick_t TICK_get(void) {
   diff = timeDiff(_VHW_initial_time, now);
   ms = diff.tv_sec*1000 + diff.tv_nsec / 1000000;
   return (time_t)ms;
+#else
+  return counter;
 #endif
   return 0;
 }
+
+#ifndef VIRTUAL_HW
+void sys_tick_handler(void) {
+  counter++;
+}
+#endif

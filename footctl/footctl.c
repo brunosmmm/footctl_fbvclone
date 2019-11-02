@@ -8,6 +8,7 @@
 #include "virtual.h"
 #else
 #include "stm32.h"
+#include  <libopencm3/cm3/nvic.h>
 #endif
 
 int main(void) {

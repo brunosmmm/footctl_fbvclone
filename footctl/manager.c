@@ -56,6 +56,7 @@ static const PODTogglableFX POD_FX_CONTROLS[POD_FX_COUNT] =
 #define BTN_HOLD_THRESH 50
 
 static const uint8_t FBV_PINGBACK[] = {0x00, 0x02, 0x00, 0x01, 0x01, 0x00};
+static const char INITIAL_TEXT[] = "Initializing... ";
 
 typedef struct manager_s {
   uint8_t fxState;
@@ -284,6 +285,15 @@ static void _pod_tx(uint8_t byte) {
 #endif
 }
 
+static void _lcd_redraw(void) {
+  LCDContents display;
+
+  memcpy((void *)display[0], mgr.currentProgram, 3);
+  memset((void *)display[0] + 3, 0, LCD_COLS - 3);
+  memcpy((void *)display[1], mgr.currentText, LCD_COLS);
+  LCD_draw(&display);
+}
+
 void MANAGER_initialize(void) {
   PODStateMachineConfig podCfg;
   FBVStateMachineConfig fbvCfg;
@@ -302,10 +312,12 @@ void MANAGER_initialize(void) {
   mgr.otherLedState = 0;
   mgr.btnStates = 0;
   mgr.expValues = 0;
-  memset(mgr.currentText, 0, 16);
+  // memset(mgr.currentText, 0, 16);
+  memcpy(mgr.currentText, INITIAL_TEXT, 16);
   memset(mgr.currentProgram, 0, 3);
   memset(mgr.btnHoldCount, 0, IO_LED_COUNT);
   mgr.flags = FLAG_WAIT_POD;
+  _lcd_redraw();
 }
 
 static inline void _refresh_leds(void) {
@@ -371,14 +383,6 @@ static inline void _detect_exp_change(void) {
   }
 }
 
-static void _lcd_redraw(void) {
-  LCDContents display;
-
-  memcpy((void*)display[0], mgr.currentProgram, 3);
-  memset((void*)display[0]+3, 0, LCD_COLS-3);
-  memcpy((void*)display[1], mgr.currentText, LCD_COLS);
-  LCD_draw(&display);
-}
 
 void MANAGER_cycle(void) {
   static uint32_t lastPing = 0;

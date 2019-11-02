@@ -9,7 +9,8 @@
 #else
 #include "stm32.h"
 #include "lcd.h"
-#include  <libopencm3/cm3/nvic.h>
+#include <libopencm3/cm3/nvic.h>
+#include <libopencm3/stm32/usart.h>
 #endif
 
 int main(void) {
@@ -46,14 +47,12 @@ int main(void) {
 
 #ifndef VIRTUAL_HW
 void usart1_isr(void) {
-  static uint8_t data = 0;
 
   /* Check if we were called because of RXNE. */
   if (((USART_CR1(USART1) & USART_CR1_RXNEIE) != 0) &&
       ((USART_SR(USART1) & USART_SR_RXNE) != 0)) {
 
     FBV_recv_byte(usart_recv(USART1));
-
   }
 }
 #endif

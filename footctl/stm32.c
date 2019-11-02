@@ -1,6 +1,10 @@
 #include "stm32.h"
 #include "config.h"
 #include <libopencm3/cm3/systick.h>
+#include <libopencm3/stm32/gpio.h>
+#include <libopencm3/stm32/rcc.h>
+#include <libopencm3/stm32/usart.h>
+#include <libopencm3/cm3/nvic.h>
 
 #ifdef STM32_MOCK
 #define INITIALIZE_LED_GPIO(LEDNUM)                                   \
@@ -46,6 +50,9 @@ void SYSTEM_initialize(void) {
 #else
   systick_set_reload(5999);
 #endif
+#ifdef STM32_MOCK
+      rcc_periph_clock_enable(RCC_AFIO);
+#endif
 
   // enable clocks
   rcc_periph_clock_enable(RCC_USART1);
@@ -62,6 +69,9 @@ void SYSTEM_initialize(void) {
 #ifdef GPIOF_USED
   rcc_periph_clock_enable(RCC_GPIOF);
 #endif
+
+  // enable interrupts
+  nvic_enable_irq(NVIC_USART1_IRQ);
 
   // setup GPIOs
   // USART 2
@@ -80,6 +90,7 @@ void SYSTEM_initialize(void) {
                 GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, GPIODEF_FBV_TX_PIN);
   gpio_set_mode(GPIODEF_FBV_RX_PORT, GPIO_MODE_INPUT,
                 GPIO_CNF_INPUT_FLOAT, GPIODEF_FBV_RX_PIN);
+  gpio_primary_remap(0, AFIO_MAPR_USART1_REMAP);
 #else
   gpio_mode_setup(GPIODEF_FBV_RX_PORT, GPIO_MODE_AF, GPIO_PUPD_NONE,
                   GPIODEF_FBV_RX_PIN);

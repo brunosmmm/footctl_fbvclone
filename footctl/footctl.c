@@ -23,12 +23,12 @@ int main(void) {
 
   // initialize
   TICK_initialize();
-  MANAGER_initialize();
-  BTNS_initialize(MANAGER_btn_event);
-  EXP_initialize();
 #ifndef VIRTUAL_HW
   LCD_initialize();
 #endif
+  MANAGER_initialize();
+  BTNS_initialize(MANAGER_btn_event);
+  EXP_initialize();
 
 #ifdef VIRTUAL_HW
   printf("INFO: starting main loop\n");

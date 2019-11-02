@@ -17,7 +17,7 @@ static inline struct timespec timeDiff(struct timespec oldTime, struct timespec 
 }
 #else
 #include <libopencm3/cm3/nvic.h>
-static tick_t counter = 0;
+static volatile tick_t counter = 0;
 #endif
 
 void TICK_initialize(void) {

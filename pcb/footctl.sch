@@ -1,5 +1,4 @@
 EESchema Schematic File Version 4
-LIBS:footctl-cache
 EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
@@ -129,7 +128,7 @@ L Connector:Conn_01x10_Female J4
 U 1 1 5DAA05CA
 P 2400 3950
 F 0 "J4" V 2565 3880 50  0000 C CNN
-F 1 "Conn_01x10_Female" V 2474 3880 50  0000 C CNN
+F 1 "NW" V 2474 3880 50  0000 C CNN
 F 2 "Connector_FFC-FPC:Hirose_FH12-10S-0.5SH_1x10-1MP_P0.50mm_Horizontal" H 2400 3950 50  0001 C CNN
 F 3 "~" H 2400 3950 50  0001 C CNN
 	1    2400 3950
@@ -140,7 +139,7 @@ L Connector:Conn_01x10_Female J3
 U 1 1 5DAA52D3
 P 2050 7450
 F 0 "J3" V 2123 7380 50  0000 C CNN
-F 1 "Conn_01x10_Female" V 2214 7380 50  0000 C CNN
+F 1 "SW" V 2214 7380 50  0000 C CNN
 F 2 "Connector_FFC-FPC:Hirose_FH12-10S-0.5SH_1x10-1MP_P0.50mm_Horizontal" H 2050 7450 50  0001 C CNN
 F 3 "~" H 2050 7450 50  0001 C CNN
 	1    2050 7450
@@ -151,7 +150,7 @@ L Connector:Conn_01x10_Female J5
 U 1 1 5DAA7A43
 P 4100 5300
 F 0 "J5" H 3992 4575 50  0000 C CNN
-F 1 "Conn_01x10_Female" H 3992 4666 50  0000 C CNN
+F 1 "E" H 3992 4666 50  0000 C CNN
 F 2 "Connector_FFC-FPC:Hirose_FH12-10S-0.5SH_1x10-1MP_P0.50mm_Horizontal" H 4100 5300 50  0001 C CNN
 F 3 "~" H 4100 5300 50  0001 C CNN
 	1    4100 5300
@@ -192,7 +191,7 @@ L Connector:Conn_01x10_Female J1
 U 1 1 5DAAE725
 P 800 5550
 F 0 "J1" H 692 4825 50  0000 C CNN
-F 1 "Conn_01x10_Female" H 692 4916 50  0000 C CNN
+F 1 "W" H 692 4916 50  0000 C CNN
 F 2 "Connector_FFC-FPC:Hirose_FH12-10S-0.5SH_1x10-1MP_P0.50mm_Horizontal" H 800 5550 50  0001 C CNN
 F 3 "~" H 800 5550 50  0001 C CNN
 	1    800  5550
@@ -255,7 +254,7 @@ L Connector:Conn_01x10_Female J2
 U 1 1 5DAECD85
 P 1350 3950
 F 0 "J2" V 1515 3880 50  0000 C CNN
-F 1 "Conn_01x10_Female" V 1424 3880 50  0000 C CNN
+F 1 "NE" V 1424 3880 50  0000 C CNN
 F 2 "Connector_FFC-FPC:Hirose_FH12-10S-0.5SH_1x10-1MP_P0.50mm_Horizontal" H 1350 3950 50  0001 C CNN
 F 3 "~" H 1350 3950 50  0001 C CNN
 	1    1350 3950
@@ -317,30 +316,13 @@ $EndComp
 Wire Wire Line
 	2050 6950 2050 7250
 Wire Wire Line
-	1350 6950 1650 6950
-Connection ~ 2050 6950
-Wire Wire Line
-	2050 6950 2150 6950
-Wire Wire Line
 	1950 7250 1950 6950
-Connection ~ 1950 6950
-Wire Wire Line
-	1950 6950 2050 6950
 Wire Wire Line
 	1850 7250 1850 6950
-Connection ~ 1850 6950
-Wire Wire Line
-	1850 6950 1950 6950
 Wire Wire Line
 	1750 7250 1750 6950
-Connection ~ 1750 6950
-Wire Wire Line
-	1750 6950 1850 6950
 Wire Wire Line
 	1650 7250 1650 6950
-Connection ~ 1650 6950
-Wire Wire Line
-	1650 6950 1750 6950
 Wire Wire Line
 	1000 5550 1250 5550
 Wire Wire Line
@@ -404,23 +386,9 @@ Wire Wire Line
 Wire Wire Line
 	1050 4150 1050 4400
 Wire Wire Line
-	1050 4400 950  4400
-Connection ~ 950  4400
-Wire Wire Line
 	1150 4150 1150 4400
 Wire Wire Line
-	1150 4400 1050 4400
-Connection ~ 1050 4400
-Wire Wire Line
-	1250 4150 1250 4400
-Wire Wire Line
-	1250 4400 1150 4400
-Connection ~ 1150 4400
-Wire Wire Line
 	1350 4150 1350 4400
-Wire Wire Line
-	1350 4400 1250 4400
-Connection ~ 1250 4400
 Wire Wire Line
 	3900 5200 3600 5200
 Wire Wire Line
@@ -477,7 +445,7 @@ L Connector:Conn_01x10_Female J7
 U 1 1 5DB43FBE
 P 7650 3900
 F 0 "J7" H 7542 4485 50  0000 C CNN
-F 1 "Conn_01x10_Female" H 7542 4394 50  0000 C CNN
+F 1 "SE" H 7542 4394 50  0000 C CNN
 F 2 "Connector_FFC-FPC:Hirose_FH12-10S-0.5SH_1x10-1MP_P0.50mm_Horizontal" H 7650 3900 50  0001 C CNN
 F 3 "~" H 7650 3900 50  0001 C CNN
 	1    7650 3900
@@ -586,68 +554,43 @@ L Connector:Conn_01x10_Female J6
 U 1 1 5DB43210
 P 7650 2900
 F 0 "J6" H 7542 3485 50  0000 C CNN
-F 1 "Conn_01x10_Female" H 7542 3394 50  0000 C CNN
+F 1 "SW" H 7542 3394 50  0000 C CNN
 F 2 "Connector_FFC-FPC:Hirose_FH12-10S-0.5SH_1x10-1MP_P0.50mm_Horizontal" H 7650 2900 50  0001 C CNN
 F 3 "~" H 7650 2900 50  0001 C CNN
 	1    7650 2900
 	-1   0    0    -1  
 $EndComp
 Wire Wire Line
-	7850 3000 7950 3000
-Wire Wire Line
-	7950 3000 7950 2900
-Wire Wire Line
 	7950 2500 7850 2500
 Wire Wire Line
 	7850 2600 7950 2600
-Connection ~ 7950 2600
 Wire Wire Line
 	7950 2600 7950 2500
-Wire Wire Line
-	7850 2700 7950 2700
-Connection ~ 7950 2700
-Wire Wire Line
-	7950 2700 7950 2600
-Wire Wire Line
-	7850 2800 7950 2800
-Connection ~ 7950 2800
-Wire Wire Line
-	7950 2800 7950 2700
-Wire Wire Line
-	7850 2900 7950 2900
-Connection ~ 7950 2900
-Wire Wire Line
-	7950 2900 7950 2800
-Wire Wire Line
-	7950 3000 8050 3000
-Connection ~ 7950 3000
 $Comp
 L power:GNDD #PWR0111
 U 1 1 5DC30C2F
-P 8050 3000
-F 0 "#PWR0111" H 8050 2750 50  0001 C CNN
-F 1 "GNDD" V 8054 2890 50  0000 R CNN
-F 2 "" H 8050 3000 50  0001 C CNN
-F 3 "" H 8050 3000 50  0001 C CNN
-	1    8050 3000
+P 8050 2500
+F 0 "#PWR0111" H 8050 2250 50  0001 C CNN
+F 1 "GNDD" V 8054 2390 50  0000 R CNN
+F 2 "" H 8050 2500 50  0001 C CNN
+F 3 "" H 8050 2500 50  0001 C CNN
+	1    8050 2500
 	0    -1   -1   0   
 $EndComp
 Text Label 1750 4800 1    50   ~ 0
 SW2
 Text Label 1650 4800 1    50   ~ 0
 LED2
-Text Label 1550 4800 1    50   ~ 0
-SW1
 Text Label 1450 4800 1    50   ~ 0
 LED1
 Text Label 2650 7200 0    50   ~ 0
-SOUTH1
+SSW2
 Text Label 2650 7100 0    50   ~ 0
-SOUTH2
+SLED2
 Text Label 2650 7000 0    50   ~ 0
-SOUTH3
+SSW1
 Text Label 2650 6900 0    50   ~ 0
-SOUTH4
+SLED1
 $Comp
 L Device:Jumper JP1
 U 1 1 5DC4A35E
@@ -871,7 +814,7 @@ L Connector:Conn_01x10_Female J8
 U 1 1 5DDE0442
 P 7650 1800
 F 0 "J8" H 7542 2385 50  0000 C CNN
-F 1 "Conn_01x10_Female" H 7542 2294 50  0000 C CNN
+F 1 "UPDOWN" H 7542 2294 50  0000 C CNN
 F 2 "Connector_FFC-FPC:Hirose_FH12-10S-0.5SH_1x10-1MP_P0.50mm_Horizontal" H 7650 1800 50  0001 C CNN
 F 3 "~" H 7650 1800 50  0001 C CNN
 	1    7650 1800
@@ -1532,7 +1475,7 @@ L Connector:Conn_01x05_Female J10
 U 1 1 5DFC4971
 P 7650 4900
 F 0 "J10" H 7542 4475 50  0000 C CNN
-F 1 "Conn_01x05_Female" H 7542 4566 50  0000 C CNN
+F 1 "PROG" H 7542 4566 50  0000 C CNN
 F 2 "Connector_PinHeader_1.27mm:PinHeader_1x05_P1.27mm_Vertical" H 7650 4900 50  0001 C CNN
 F 3 "~" H 7650 4900 50  0001 C CNN
 	1    7650 4900
@@ -1582,22 +1525,14 @@ Wire Wire Line
 	9950 4000 10550 4000
 Wire Wire Line
 	7850 4100 8350 4100
-Text Label 8350 4100 2    50   ~ 0
-IO0
 Wire Wire Line
 	9950 4100 10550 4100
 Wire Wire Line
 	7850 4200 8350 4200
-Text Label 8350 4200 2    50   ~ 0
-IO1
 Wire Wire Line
 	8750 2300 8350 2300
 Wire Wire Line
 	8350 4300 7850 4300
-Text Label 8350 4300 2    50   ~ 0
-IO2
-Text Label 8350 4400 2    50   ~ 0
-IO3
 Wire Wire Line
 	8350 4400 7850 4400
 Wire Wire Line
@@ -1608,14 +1543,8 @@ Wire Wire Line
 	8350 3800 7850 3800
 Wire Wire Line
 	8350 3700 7850 3700
-Text Label 8350 4000 2    50   ~ 0
-IO4
-Text Label 8350 3900 2    50   ~ 0
-IO5
-Text Label 8350 3800 2    50   ~ 0
-IO6
 Text Label 8350 3700 2    50   ~ 0
-IO7
+IOLED3
 Wire Wire Line
 	10550 3700 9950 3700
 Text Label 10550 3900 2    50   ~ 0
@@ -1627,7 +1556,7 @@ LCDD7
 Wire Wire Line
 	8750 4400 8500 4400
 Text Label 8500 4400 0    50   ~ 0
-IO3
+IOSW0
 Wire Wire Line
 	8750 4300 8500 4300
 Wire Wire Line
@@ -1635,11 +1564,11 @@ Wire Wire Line
 Wire Wire Line
 	8750 4100 8500 4100
 Text Label 8500 4300 0    50   ~ 0
-IO2
+IOLED0
 Text Label 8500 4200 0    50   ~ 0
-IO1
+IOSW1
 Text Label 8500 4100 0    50   ~ 0
-IO0
+IOLED1
 Wire Wire Line
 	8100 3200 7850 3200
 Wire Wire Line
@@ -1647,11 +1576,11 @@ Wire Wire Line
 Wire Wire Line
 	8100 3400 7850 3400
 Text Label 8100 3400 2    50   ~ 0
-IO8
+IOSW4
 Text Label 8100 3300 2    50   ~ 0
-IO9
+IOLED4
 Text Label 8100 3200 2    50   ~ 0
-IO10
+IOSW5
 Text Label 8350 2300 0    50   ~ 0
 LCDRS
 Text Label 10550 4100 2    50   ~ 0
@@ -1663,9 +1592,9 @@ Wire Wire Line
 Wire Wire Line
 	8500 3900 8750 3900
 Text Label 8500 4000 0    50   ~ 0
-IO4
+IOSW2
 Text Label 8500 3900 0    50   ~ 0
-IO5
+IOLED2
 Wire Wire Line
 	8750 3100 8500 3100
 Wire Wire Line
@@ -1673,37 +1602,33 @@ Wire Wire Line
 Wire Wire Line
 	8750 2900 8500 2900
 Text Label 8500 3100 0    50   ~ 0
-IO6
+IOSW3
 Text Label 8500 3000 0    50   ~ 0
-IO7
+IOLED3
 Text Label 8500 2900 0    50   ~ 0
-IO8
+IOSW4
 Wire Wire Line
 	10550 3600 9950 3600
 Text Label 10550 3600 2    50   ~ 0
-IO9
+IOLED4
 Text Label 10550 3500 2    50   ~ 0
-IO10
+IOSW5
 Wire Wire Line
 	8100 3100 7850 3100
-Text Label 8100 3100 2    50   ~ 0
-IO11
-Text Label 10550 3400 2    50   ~ 0
-IO11
 Wire Wire Line
 	8000 2300 7850 2300
 Wire Wire Line
 	8000 2100 7850 2100
 Text Label 8000 2300 2    50   ~ 0
-IO12
+IOSW8
 Text Label 8000 2100 2    50   ~ 0
-IO13
+IOOSW9
 NoConn ~ 7850 2000
 NoConn ~ 7850 2200
 Text Label 10550 3300 2    50   ~ 0
-IO12
+IOSW8
 Text Label 10550 3200 2    50   ~ 0
-IO13
+IOSW9
 Text Label 10550 2900 2    50   ~ 0
 EXP1
 Text Label 10550 3000 2    50   ~ 0
@@ -2064,10 +1989,10 @@ Wire Wire Line
 Wire Wire Line
 	8750 1800 8550 1800
 $Comp
-L power:GNDD #PWR?
+L power:GNDD #PWR0151
 U 1 1 5DD50CFC
 P 8550 1800
-F 0 "#PWR?" H 8550 1550 50  0001 C CNN
+F 0 "#PWR0151" H 8550 1550 50  0001 C CNN
 F 1 "GNDD" V 8554 1690 50  0000 R CNN
 F 2 "" H 8550 1800 50  0001 C CNN
 F 3 "" H 8550 1800 50  0001 C CNN
@@ -2079,22 +2004,102 @@ NoConn ~ 8750 2100
 NoConn ~ 8750 2500
 NoConn ~ 8750 2600
 NoConn ~ 8750 2700
-NoConn ~ 8750 3200
-NoConn ~ 8750 3300
-NoConn ~ 8750 3400
-NoConn ~ 8750 3700
 NoConn ~ 8750 3800
 NoConn ~ 9950 4400
 NoConn ~ 8750 2200
 $Comp
-L power:GNDD #PWR?
+L power:GNDD #PWR0152
 U 1 1 5DC15D0D
 P 5500 1500
-F 0 "#PWR?" H 5500 1250 50  0001 C CNN
+F 0 "#PWR0152" H 5500 1250 50  0001 C CNN
 F 1 "GNDD" V 5504 1390 50  0000 R CNN
 F 2 "" H 5500 1500 50  0001 C CNN
 F 3 "" H 5500 1500 50  0001 C CNN
 	1    5500 1500
 	0    1    1    0   
 $EndComp
+Wire Wire Line
+	1250 4150 1250 4400
+Wire Wire Line
+	1350 6950 1650 6950
+Connection ~ 1650 6950
+Wire Wire Line
+	1650 6950 1750 6950
+Text Label 2150 6950 3    50   ~ 0
+SSW4
+Text Label 2050 6950 3    50   ~ 0
+SLED4
+Text Label 1950 6950 3    50   ~ 0
+SSW3
+Text Label 1850 6950 3    50   ~ 0
+SLED3
+Text Label 1350 4400 1    50   ~ 0
+SSW4
+Text Label 1250 4400 1    50   ~ 0
+SLED4
+Text Label 1150 4400 1    50   ~ 0
+SSW3
+Text Label 1050 4400 1    50   ~ 0
+SLED3
+Wire Wire Line
+	8050 2500 7950 2500
+Connection ~ 7950 2500
+Wire Wire Line
+	7850 3000 8100 3000
+Wire Wire Line
+	7850 2900 8100 2900
+Wire Wire Line
+	7850 2800 8100 2800
+Wire Wire Line
+	7850 2700 8100 2700
+Text Label 8100 2900 2    50   ~ 0
+IOLED6
+Text Label 8100 2800 2    50   ~ 0
+IOSW7
+Text Label 8100 2700 2    50   ~ 0
+IOLED7
+Text Label 3700 4800 0    50   ~ 0
+ESW2
+Text Label 3700 4900 0    50   ~ 0
+ELED2
+Text Label 3700 5000 0    50   ~ 0
+ESW1
+Text Label 3700 5100 0    50   ~ 0
+ELED1
+Text Label 8350 3800 2    50   ~ 0
+IOSW3
+Text Label 8350 3900 2    50   ~ 0
+IOLED2
+Text Label 8350 4000 2    50   ~ 0
+IOSW2
+Text Label 8350 4100 2    50   ~ 0
+IOLED1
+Text Label 8350 4200 2    50   ~ 0
+IOSW1
+Text Label 8350 4300 2    50   ~ 0
+IOLED0
+Text Label 8350 4400 2    50   ~ 0
+IOSW0
+Text Label 8100 3000 2    50   ~ 0
+IOSW6
+Text Label 10550 3400 2    50   ~ 0
+IOLED5
+Text Label 8100 3100 2    50   ~ 0
+IOLED5
+Wire Wire Line
+	8750 3200 8500 3200
+Wire Wire Line
+	8500 3300 8750 3300
+Wire Wire Line
+	8500 3400 8750 3400
+Text Label 8500 3200 0    50   ~ 0
+IOSW6
+Text Label 8500 3300 0    50   ~ 0
+IOLED6
+Text Label 8500 3400 0    50   ~ 0
+IOSW7
+Wire Wire Line
+	8750 3700 8500 3700
+Text Label 8500 3700 0    50   ~ 0
+IOLED7
 $EndSCHEMATC

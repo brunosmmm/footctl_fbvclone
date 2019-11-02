@@ -111,6 +111,7 @@ void SYSTEM_initialize(void) {
   usart_set_stopbits(USART1, USART_CR2_STOPBITS_1);
   usart_set_mode(USART1, USART_MODE_TX_RX);
   usart_set_flow_control(USART1, USART_FLOWCONTROL_NONE);
+  USART_CR1(USART1) |= USART_CR1_RXNEIE;
 
   // MIDI
   usart_set_baudrate(USART2, 31250);

@@ -44,6 +44,12 @@ tick_t TICK_get(void) {
   return 0;
 }
 
+void TICK_wait(tick_t duration) {
+  tick_t start = TICK_get();
+
+  while(TICK_get() < start + duration);
+}
+
 #ifndef VIRTUAL_HW
 void sys_tick_handler(void) {
   counter++;

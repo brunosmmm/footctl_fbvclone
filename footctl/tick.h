@@ -6,5 +6,6 @@
 
 void TICK_initialize(void);
 tick_t TICK_get(void);
+void TICK_wait(tick_t duration);
 
 #endif

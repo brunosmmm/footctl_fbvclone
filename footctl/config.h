@@ -21,7 +21,7 @@
 #define EXP1_CC BOD_CTL_VOL
 #define EXP2_CC BOD_CTL_WAHPOS
 
-typedef uint32_t tick_t;
+typedef uint64_t tick_t;
 
 #define CONFIG_LED_COUNT 8
 #define CONFIG_BTN_COUNT 10

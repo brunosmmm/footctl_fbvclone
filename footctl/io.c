@@ -39,8 +39,19 @@ uint32_t BTNS_get_state(void) {
 }
 
 static uint32_t _read_btns(void) {
+  unsigned int i = 0;
+  uint32_t states = 0;
   // do something
+#ifdef VIRTUAL_HW
   return 0;
+#else
+  for (i=0;i<CONFIG_BTN_COUNT;i++) {
+    if (gpio_get(BTN_PORTS[i], BTN_PINS[i])) {
+      states |= (1<<i);
+    }
+  }
+  return states;
+#endif
 }
 
 static uint32_t _read_exp(void) {

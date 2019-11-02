@@ -23,6 +23,9 @@
 
 typedef uint32_t tick_t;
 
+#define CONFIG_LED_COUNT 8
+#define CONFIG_BTN_COUNT 10
+
 #ifndef VIRTUAL_HW
 // mock hardware, development board
 #define STM32_MOCK
@@ -158,5 +161,10 @@ typedef uint32_t tick_t;
 #define GPIODEF_BTN9_PORT GPIOA
 #define GPIODEF_BTN9_PIN GPIO3
 #endif
+
+extern const uint32_t LED_PORTS[];
+extern const uint32_t LED_PINS[];
+extern const uint32_t BTN_PORTS[];
+extern const uint32_t BTN_PINS[];
 
 #endif

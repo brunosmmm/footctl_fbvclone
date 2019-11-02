@@ -8,6 +8,8 @@
 #ifdef VIRTUAL_HW
 #include <stdio.h>
 #include "virtual.h"
+#else
+#include <libopencm3/stm32/usart.h>
 #endif
 
 // setup togglable FX bits for internal state
@@ -267,6 +269,8 @@ static void _fbv_tx(uint8_t byte) {
 #ifdef VIRTUAL_HW
   printf("FBV TX: %hhx\n", byte);
   VIRTUAL_fbv_rxbyte(byte);
+#else
+  usart_send_blocking(USART1, byte);
 #endif
 }
 
@@ -274,6 +278,8 @@ static void _pod_tx(uint8_t byte) {
 #ifdef VIRTUAL_HW
   printf("MIDI TX: %hhx\n", byte);
   VIRTUAL_midi_rxbyte(byte);
+#else
+  usart_send_blocking(USART2, byte);
 #endif
 }
 

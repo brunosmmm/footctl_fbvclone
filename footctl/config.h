@@ -29,6 +29,10 @@ typedef uint32_t tick_t;
 #endif
 
 #ifdef STM32_MOCK
+// general definitions
+#define GPIOA_USED
+#define GPIOB_USED
+#define GPIOC_USED
 //LCD
 #define GPIODEF_LCD_D4_PORT GPIOA
 #define GPIODEF_LCD_D4_PIN GPIO11

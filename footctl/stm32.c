@@ -12,9 +12,19 @@
 void SYSTEM_initialize(void) {
   // enable clocks
   rcc_periph_clock_enable(RCC_USART1);
+  rcc_periph_clock_enable(RCC_USART2);
+#ifdef GPIOA_USED
   rcc_periph_clock_enable(RCC_GPIOA);
+#endif
+#ifdef GPIOB_USED
   rcc_periph_clock_enable(RCC_GPIOB);
+#endif
+#ifdef GPIOC_USED
+  rcc_periph_clock_enable(RCC_GPIOC);
+#endif
+#ifdef GPIOF_USED
   rcc_periph_clock_enable(RCC_GPIOF);
+#endif
 
   // setup GPIOs
   // USART 2

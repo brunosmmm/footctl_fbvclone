@@ -166,5 +166,7 @@ extern const uint32_t LED_PORTS[];
 extern const uint32_t LED_PINS[];
 extern const uint32_t BTN_PORTS[];
 extern const uint32_t BTN_PINS[];
+extern const uint32_t LCD_DPORTS[];
+extern const uint32_t LCD_DPINS[];
 
 #endif

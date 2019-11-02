@@ -72,7 +72,7 @@ void LCD_draw(LCDContents* contents) {
   for (i=0;i<LCD_ROWS;i++) {
     _lcd_cursor(i, 0);
     for (j=0;j<LCD_COLS;j++) {
-      _lcd_write_data((char)contents[i][j]);
+      _lcd_write_data((char)*contents[i][j]);
     }
   }
 

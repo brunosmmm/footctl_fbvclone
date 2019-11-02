@@ -8,6 +8,7 @@
 #include "virtual.h"
 #else
 #include "stm32.h"
+#include "lcd.h"
 #include  <libopencm3/cm3/nvic.h>
 #endif
 
@@ -25,6 +26,9 @@ int main(void) {
   MANAGER_initialize();
   BTNS_initialize(MANAGER_btn_event);
   EXP_initialize();
+#ifndef VIRTUAL_HW
+  LCD_initialize();
+#endif
 
 #ifdef VIRTUAL_HW
   printf("INFO: starting main loop\n");

@@ -10,6 +10,7 @@
 #include "virtual.h"
 #else
 #include <libopencm3/stm32/usart.h>
+#include "lcd.h"
 #endif
 
 // setup togglable FX bits for internal state
@@ -370,6 +371,15 @@ static inline void _detect_exp_change(void) {
   }
 }
 
+static void _lcd_redraw(void) {
+  LCDContents display;
+
+  memcpy((void*)display[0], mgr.currentProgram, 3);
+  memset((void*)display[0]+3, 0, LCD_COLS-3);
+  memcpy((void*)display[1], mgr.currentText, LCD_COLS);
+  LCD_draw(&display);
+}
+
 void MANAGER_cycle(void) {
   static uint32_t lastPing = 0;
   tick_t now = 0;
@@ -420,6 +430,7 @@ void MANAGER_cycle(void) {
   // trigger display redraw
   if (mgr.flags & FLAG_DISPLAY_DIRTY) {
     // redraw
+    _lcd_redraw();
     mgr.flags &= ~FLAG_DISPLAY_DIRTY;
   }
 

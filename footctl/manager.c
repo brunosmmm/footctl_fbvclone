@@ -24,12 +24,12 @@
 #define POD_INVALID_FX 0xFF
 
 // Channel LEDs
-#define LED_CHANNEL_A 0x0
-#define LED_CHANNEL_B 0x1
-#define LED_CHANNEL_C 0x2
-#define LED_CHANNEL_D 0x3
-#define LED_TAP 0x4
-#define LED_TUNER 0x5
+#define LED_CHANNEL_A 0x7
+#define LED_CHANNEL_B 0x6
+#define LED_CHANNEL_C 0x3
+#define LED_CHANNEL_D 0x2
+#define LED_TAP 0xff
+#define LED_TUNER 0xff
 #define LED_COUNT 0x6
 #define LED_INVALID 0xFF
 

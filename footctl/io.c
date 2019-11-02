@@ -95,8 +95,17 @@ void EXP_cycle(void) {
 }
 
 void LEDS_set_state(uint32_t led_states) {
+  unsigned int i = 0;
 #ifdef VIRTUAL_HW
   // printf("SET LED STATES: %x\n", led_states);
+#else
+  for(i=0;i<CONFIG_LED_COUNT;i++) {
+    if (led_states & (1<<i)) {
+      gpio_set(LED_PORTS[i], LED_PINS[i]);
+    } else {
+      gpio_clear(LED_PORTS[i], LED_PINS[i]);
+    }
+  }
 #endif
 }
 

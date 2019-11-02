@@ -15,7 +15,7 @@
 #ifdef STM32_MOCK
 #define INITIALIZE_BTN_GPIO(BTNNUM)                                            \
   gpio_set_mode(GPIODEF_BTN##BTNNUM##_PORT, GPIO_MODE_INPUT,                 \
-                GPIO_CNF_INPUT_PULL_UPDOWN, GPIODEF_BTN##BTNNUM##_PIN);
+                GPIO_CNF_INPUT_PULL_UPDOWN+1, GPIODEF_BTN##BTNNUM##_PIN);
 #else
 #define INITIALIZE_BTN_GPIO(BTNNUM)                                     \
   gpio_mode_setup(GPIODEF_BTN##BTNNUM##_PORT, GPIO_MODE_INPUT,          \

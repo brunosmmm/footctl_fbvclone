@@ -517,19 +517,19 @@ void MANAGER_btn_event(uint8_t btn_id, uint8_t state) {
   if (state) {
     switch(btn_id) {
     case BTN_CHA:
-      pgm = 4*(mgr.actualProgram / 4);
-      _pod_activate_program(pgm);
-      break;
-    case BTN_CHB:
       pgm = 4*(mgr.actualProgram / 4) + 1;
       _pod_activate_program(pgm);
       break;
-    case BTN_CHC:
+    case BTN_CHB:
       pgm = 4*(mgr.actualProgram / 4) + 2;
       _pod_activate_program(pgm);
       break;
-    case BTN_CHD:
+    case BTN_CHC:
       pgm = 4*(mgr.actualProgram / 4) + 3;
+      _pod_activate_program(pgm);
+      break;
+    case BTN_CHD:
+      pgm = 4*(mgr.actualProgram / 4) + 4;
       _pod_activate_program(pgm);
       break;
     case BTN_UP:

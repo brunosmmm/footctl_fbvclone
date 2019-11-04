@@ -33,7 +33,7 @@ static void _lcd_write(uint8_t data) {
     }
   }
   gpio_set(GPIODEF_LCD_E_PORT, GPIODEF_LCD_E_PIN);
-  TICK_wait(1);
+  TICK_wait(10);
   gpio_clear(GPIODEF_LCD_E_PORT, GPIODEF_LCD_E_PIN);
 }
 

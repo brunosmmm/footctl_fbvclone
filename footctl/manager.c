@@ -345,7 +345,7 @@ void MANAGER_initialize(void) {
   fbvCfg.msgRx = _fbv_rx; //_queue_in;
   fbvCfg.msgTx = _fbv_tx;
   podCfg.msgTx = _pod_tx;
-  podCfg.channel = POD_MIDI_CHANNEL;
+  podCfg.channel = POD_MIDI_CHANNEL - 1;
 
   // initialize
   FBV_initialize(&fbvCfg);

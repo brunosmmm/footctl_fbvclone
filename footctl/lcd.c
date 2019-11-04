@@ -20,12 +20,12 @@
 #define LCD_FN_N 0x08
 #define LCD_FN_F 0x04
 
-#define DELAY_NS 1000000000/72000000
+#define DELAY_NS (1000000000/72000000)
 
 const uint8_t ROWS[] = {0x00, 0x40};
 
 inline static void _delay_ns(uint32_t amount) {
-  uint32_t cycles = 0;
+  volatile uint32_t cycles = 0;
   if (amount < DELAY_NS) {
     cycles = 1;
   } else {
@@ -38,9 +38,9 @@ inline static void _delay_ns(uint32_t amount) {
 }
 inline static void _lcd_en(void) {
   gpio_set(GPIODEF_LCD_E_PORT, GPIODEF_LCD_E_PIN);
-  _delay_ns(250);
+  _delay_ns(5000);
   gpio_clear(GPIODEF_LCD_E_PORT, GPIODEF_LCD_E_PIN);
-  _delay_ns(250);
+  _delay_ns(5000);
 }
 
 inline static void _lcd_read_mode(void) {
@@ -55,6 +55,7 @@ inline static void _lcd_read_mode(void) {
                 GPIODEF_LCD_D4_PIN);
 #endif
   gpio_set(GPIODEF_LCD_RW_PORT, GPIODEF_LCD_RW_PIN);
+  _delay_ns(500);
 }
 
 inline static void _lcd_write_mode(void) {
@@ -69,6 +70,7 @@ inline static void _lcd_write_mode(void) {
                 GPIO_CNF_OUTPUT_PUSHPULL, GPIODEF_LCD_D4_PIN);
 #endif
   gpio_clear(GPIODEF_LCD_RW_PORT, GPIODEF_LCD_RW_PIN);
+  _delay_ns(500);
 }
 
 inline static void _lcd_wait(void) {
@@ -76,7 +78,7 @@ inline static void _lcd_wait(void) {
   _lcd_read_mode();
   do {
     gpio_set(GPIODEF_LCD_E_PORT, GPIODEF_LCD_E_PIN);
-    _delay_ns(300);
+    _delay_ns(500);
     busy = gpio_get(GPIODEF_LCD_D7_PORT, GPIODEF_LCD_D7_PIN);
     gpio_clear(GPIODEF_LCD_E_PORT, GPIODEF_LCD_E_PIN);
     _lcd_en();
@@ -87,28 +89,39 @@ inline static void _lcd_wait(void) {
 
 static void _lcd_write(uint8_t data) {
   unsigned int i = 0;
-  _lcd_wait();
+  uint8_t _send = 0;
+  //_lcd_wait();
+  _send = data >> 4;
   for (i=0; i<4;i++) {
-    if (data & (1<<i)) {
+    if (_send & (1<<i)) {
       gpio_set(LCD_DPORTS[i], LCD_DPINS[i]);
     }
     else {
       gpio_clear(LCD_DPORTS[i], LCD_DPINS[i]);
     }
   }
+  _delay_ns(200);
+  _lcd_en();
+  _send = data & 0x0F;
+  for (i = 0; i < 4; i++) {
+    if (_send & (1 << i)) {
+      gpio_set(LCD_DPORTS[i], LCD_DPINS[i]);
+    } else {
+      gpio_clear(LCD_DPORTS[i], LCD_DPINS[i]);
+    }
+  }
+  _delay_ns(200);
   _lcd_en();
 }
 
 static void _lcd_write_cmd(uint8_t cmd) {
   gpio_clear(GPIODEF_LCD_RS_PORT, GPIODEF_LCD_RS_PIN);
-  _lcd_write(cmd >> 4);
-  _lcd_write(cmd & 0x0F);
+  _lcd_write(cmd);
 }
 
 static void _lcd_write_data(uint8_t data) {
   gpio_set(GPIODEF_LCD_RS_PORT, GPIODEF_LCD_RS_PIN);
-  _lcd_write(data>>4);
-  _lcd_write(data&0x0F);
+  _lcd_write(data);
 }
 
 static void _lcd_cursor(uint8_t row, uint8_t col) {

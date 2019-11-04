@@ -71,11 +71,11 @@ static inline void _send_pc(uint8_t value) {
 
 // set fx state
 void POD_set_fx_state(PODTogglableFX fx, uint8_t state) {
-  _send_cc((PODControlType)fx, state ? 0xff : 0x00);
+  _send_cc((PODControlType)fx, state ? 0x7f : 0x00);
 }
 
 void POD_enable_tuner(void) {
-  _send_cc(BOD_CTL_TUNER_EN, 0xff);
+  _send_cc(BOD_CTL_TUNER_EN, 0x7f);
 }
 
 void POD_disable_tuner(void) {
@@ -91,5 +91,5 @@ void POD_change_control(PODControlType ctl, uint8_t value) {
 }
 
 void POD_send_tap(void) {
-  _send_cc(BOD_CTL_TAP, 0xff);
+  _send_cc(BOD_CTL_TAP, 0x7f);
 }

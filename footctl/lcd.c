@@ -20,10 +20,73 @@
 #define LCD_FN_N 0x08
 #define LCD_FN_F 0x04
 
+#define DELAY_NS 1000000000/72000000
+
 const uint8_t ROWS[] = {0x00, 0x40};
+
+inline static void _delay_ns(uint32_t amount) {
+  uint32_t cycles = 0;
+  if (amount < DELAY_NS) {
+    cycles = 1;
+  } else {
+    cycles = amount/DELAY_NS;
+  }
+
+  while(cycles--) {
+    __asm__("nop");
+  }
+}
+inline static void _lcd_en(void) {
+  gpio_set(GPIODEF_LCD_E_PORT, GPIODEF_LCD_E_PIN);
+  _delay_ns(300);
+  gpio_clear(GPIODEF_LCD_E_PORT, GPIODEF_LCD_E_PIN);
+}
+
+inline static void _lcd_read_mode(void) {
+#ifdef STM32_MOCK
+  gpio_set_mode(GPIODEF_LCD_D7_PORT, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT,
+                GPIODEF_LCD_D7_PIN);
+  gpio_set_mode(GPIODEF_LCD_D6_PORT, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT,
+                GPIODEF_LCD_D6_PIN);
+  gpio_set_mode(GPIODEF_LCD_D5_PORT, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT,
+                GPIODEF_LCD_D5_PIN);
+  gpio_set_mode(GPIODEF_LCD_D4_PORT, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT,
+                GPIODEF_LCD_D4_PIN);
+#endif
+  gpio_set(GPIODEF_LCD_RW_PORT, GPIODEF_LCD_RW_PIN);
+}
+
+inline static void _lcd_write_mode(void) {
+#ifdef STM32_MOCK
+  gpio_set_mode(GPIODEF_LCD_D7_PORT, GPIO_MODE_OUTPUT_50_MHZ,
+                GPIO_CNF_OUTPUT_PUSHPULL, GPIODEF_LCD_D7_PIN);
+  gpio_set_mode(GPIODEF_LCD_D6_PORT, GPIO_MODE_OUTPUT_50_MHZ,
+                GPIO_CNF_OUTPUT_PUSHPULL, GPIODEF_LCD_D6_PIN);
+  gpio_set_mode(GPIODEF_LCD_D5_PORT, GPIO_MODE_OUTPUT_50_MHZ,
+                GPIO_CNF_OUTPUT_PUSHPULL, GPIODEF_LCD_D5_PIN);
+  gpio_set_mode(GPIODEF_LCD_D4_PORT, GPIO_MODE_OUTPUT_50_MHZ,
+                GPIO_CNF_OUTPUT_PUSHPULL, GPIODEF_LCD_D4_PIN);
+#endif
+  gpio_clear(GPIODEF_LCD_RW_PORT, GPIODEF_LCD_RW_PIN);
+}
+
+inline static void _lcd_wait(void) {
+  uint8_t busy = 0;
+  _lcd_read_mode();
+  do {
+    gpio_set(GPIODEF_LCD_E_PORT, GPIODEF_LCD_E_PIN);
+    _delay_ns(300);
+    busy = gpio_get(GPIODEF_LCD_D7_PORT, GPIODEF_LCD_D7_PIN);
+    gpio_clear(GPIODEF_LCD_E_PORT, GPIODEF_LCD_E_PIN);
+    _lcd_en();
+  }
+  while (busy);
+  _lcd_write_mode();
+}
 
 static void _lcd_write(uint8_t data) {
   unsigned int i = 0;
+  _lcd_wait();
   for (i=0; i<4;i++) {
     if (data & (1<<i)) {
       gpio_set(LCD_DPORTS[i], LCD_DPINS[i]);
@@ -32,9 +95,7 @@ static void _lcd_write(uint8_t data) {
       gpio_clear(LCD_DPORTS[i], LCD_DPINS[i]);
     }
   }
-  gpio_set(GPIODEF_LCD_E_PORT, GPIODEF_LCD_E_PIN);
-  TICK_wait(2);
-  gpio_clear(GPIODEF_LCD_E_PORT, GPIODEF_LCD_E_PIN);
+  _lcd_en();
 }
 
 static void _lcd_write_cmd(uint8_t cmd) {

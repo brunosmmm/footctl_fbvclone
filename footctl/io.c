@@ -46,7 +46,7 @@ static uint32_t _read_btns(void) {
   return 0;
 #else
   for (i=0;i<CONFIG_BTN_COUNT;i++) {
-    if (gpio_get(BTN_PORTS[i], BTN_PINS[i])) {
+    if (!gpio_get(BTN_PORTS[i], BTN_PINS[i])) {
       states |= (1<<i);
     }
   }
@@ -81,7 +81,7 @@ void BTNS_cycle(void) {
         if (btn_state & (1<<i)) {
           btns.buttonStates |= (1<<i);
         } else {
-          btns.buttonStates &= (1<<i);
+          btns.buttonStates &= ~(1<<i);
         }
         // reset debounce counter
         btns.transientStates[i] = 0;

@@ -38,8 +38,9 @@ inline static void _delay_ns(uint32_t amount) {
 }
 inline static void _lcd_en(void) {
   gpio_set(GPIODEF_LCD_E_PORT, GPIODEF_LCD_E_PIN);
-  _delay_ns(300);
+  _delay_ns(250);
   gpio_clear(GPIODEF_LCD_E_PORT, GPIODEF_LCD_E_PIN);
+  _delay_ns(250);
 }
 
 inline static void _lcd_read_mode(void) {

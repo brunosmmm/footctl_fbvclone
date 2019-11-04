@@ -10,7 +10,7 @@
 typedef struct btn_control_s {
   BTNEventCallback evtCb;
   uint32_t buttonStates;
-  uint8_t transientStates[IO_LED_COUNT];
+  uint8_t transientStates[IO_BTN_COUNT];
   tick_t lastCycle;
 } BTNStateControl;
 
@@ -26,7 +26,7 @@ void BTNS_initialize(BTNEventCallback callback) {
   btns.evtCb = callback;
   btns.buttonStates = 0;
   btns.lastCycle = 0;
-  memset(btns.transientStates, 0, IO_LED_COUNT);
+  memset(btns.transientStates, 0, IO_BTN_COUNT);
 }
 
 void EXP_initialize(void) {
@@ -69,7 +69,7 @@ void BTNS_cycle(void) {
   }
 
   btn_state = _read_btns();
-  for (i=0; i<IO_LED_COUNT;i++) {
+  for (i=0; i<IO_BTN_COUNT;i++) {
     if ((btn_state & (1<<i)) ^ (btns.buttonStates & (1<<i))) {
       // states differ for this particular bit
       if (btns.transientStates[i] < BTN_DEBOUNCE_COUNT) {

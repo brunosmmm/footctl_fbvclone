@@ -470,8 +470,10 @@ void MANAGER_cycle(void) {
     tmp += (mgr.currentProgram[2] - 'A');
     mgr.actualProgram = tmp;
     // clear flags
-    mgr.flags &= ~(FLAG_PGM_UPDATE_1|FLAG_PGM_UPDATE_2|FLAG_PGM_UPDATE_3);
-    mgr.flags |= FLAG_DISPLAY_DIRTY;
+    if (!(mgr.flags & FLAG_WAIT_POD)) {
+      mgr.flags &= ~(FLAG_PGM_UPDATE_1 | FLAG_PGM_UPDATE_2 | FLAG_PGM_UPDATE_3);
+      mgr.flags |= FLAG_DISPLAY_DIRTY;
+    }
   }
 
   // refresh led states
@@ -484,7 +486,7 @@ void MANAGER_cycle(void) {
   _detect_exp_change();
 
   // trigger display redraw
-  if (mgr.flags & FLAG_DISPLAY_DIRTY) {
+  if ((mgr.flags & FLAG_DISPLAY_DIRTY) && !(mgr.flags & FLAG_WAIT_POD)) {
     // redraw
     _lcd_redraw();
     mgr.flags &= ~FLAG_DISPLAY_DIRTY;
@@ -515,19 +517,19 @@ void MANAGER_btn_event(uint8_t btn_id, uint8_t state) {
   if (state) {
     switch(btn_id) {
     case BTN_CHA:
-      pgm = mgr.actualProgram / 4;
+      pgm = 4*(mgr.actualProgram / 4);
       _pod_activate_program(pgm);
       break;
     case BTN_CHB:
-      pgm = mgr.actualProgram / 4 + 1;
+      pgm = 4*(mgr.actualProgram / 4) + 1;
       _pod_activate_program(pgm);
       break;
     case BTN_CHC:
-      pgm = mgr.actualProgram / 4 + 2;
+      pgm = 4*(mgr.actualProgram / 4) + 2;
       _pod_activate_program(pgm);
       break;
     case BTN_CHD:
-      pgm = mgr.actualProgram / 4 + 3;
+      pgm = 4*(mgr.actualProgram / 4) + 3;
       _pod_activate_program(pgm);
       break;
     case BTN_UP:

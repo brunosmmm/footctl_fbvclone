@@ -30,17 +30,17 @@ static FBVStateMachine fsm;
 
 // done receiving packet
 static void fbv_rx_done(void) {
-  FBVMessage msg;
+  FBVMessage msg = {0};
   fsm.wrPtr = 0;
 
   // save message
   msg.paramSize = fsm.rxBuffer[0] - 1;
   msg.msgType = fsm.rxBuffer[1];
-  memcpy(&msg.params, fsm.rxBuffer+2, fsm.rxBuffer[0] - 1);
+  memcpy(msg.params, fsm.rxBuffer+2, fsm.rxBuffer[0] - 1);
 
   if (msg.msgType == FBV_SET_TXT) {
     // null terminated string
-    msg.params[msg.paramSize] = 0;
+    msg.params[msg.paramSize+1] = 0;
   }
 
   // callback with received message
@@ -83,6 +83,7 @@ void FBV_recv_byte(uint8_t byte) {
       break;
     }
     fsm.state = FBV_STATE_RX_LEN;
+    fsm.wrPtr = 0;
     break;
   case FBV_STATE_RX_LEN:
     if (byte > MAX_PARAM_SIZE) {

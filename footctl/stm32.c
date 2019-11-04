@@ -90,7 +90,7 @@ void SYSTEM_initialize(void) {
                 GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, GPIODEF_FBV_TX_PIN);
   gpio_set_mode(GPIODEF_FBV_RX_PORT, GPIO_MODE_INPUT,
                 GPIO_CNF_INPUT_FLOAT, GPIODEF_FBV_RX_PIN);
-  gpio_primary_remap(0, AFIO_MAPR_USART1_REMAP);
+  gpio_primary_remap(0, AFIO_MAPR_USART1_REMAP | AFIO_MAPR_SWJ_CFG_JTAG_OFF_SW_ON);
 #else
   gpio_mode_setup(GPIODEF_FBV_RX_PORT, GPIO_MODE_AF, GPIO_PUPD_NONE,
                   GPIODEF_FBV_RX_PIN);

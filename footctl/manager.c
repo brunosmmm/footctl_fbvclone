@@ -25,13 +25,13 @@
 #define POD_INVALID_FX 0xFF
 
 // Channel LEDs
-#define LED_CHANNEL_A 0x7
-#define LED_CHANNEL_B 0x6
-#define LED_CHANNEL_C 0x3
-#define LED_CHANNEL_D 0x2
+#define LED_CHANNEL_A 0x0
+#define LED_CHANNEL_B 0x1
+#define LED_CHANNEL_C 0x2
+#define LED_CHANNEL_D 0x3
 #define LED_TAP 0xff
 #define LED_TUNER 0xff
-#define LED_COUNT 0x6
+#define LED_COUNT 0x4
 #define LED_INVALID 0xFF
 
 // build a few tables for FX state management
@@ -49,11 +49,14 @@ static const PODTogglableFX POD_FX_CONTROLS[POD_FX_COUNT] =
 #define FLAG_PGM_UPDATE_2 0x10
 #define FLAG_PGM_UPDATE_3 0x20
 #define FLAG_TUNER_MODE 0x40
+#define FLAG_FIRST_PING 0x80
 
 // #define POD_RESPOND_PINGS
-#define MAIN_LOOP_INTERVAL 10
-#define PROBE_INTERVAL_MULT 30
-#define BTN_HOLD_THRESH 50
+#define MAIN_LOOP_INTERVAL 1
+#define PROBE_INTERVAL_MULT 300
+#define BTN_HOLD_THRESH 500
+
+#define MSG_QUEUE_LEN 8
 
 static const uint8_t FBV_PINGBACK[] = {0x00, 0x02, 0x00, 0x01, 0x01, 0x00};
 static const char INITIAL_TEXT[2][16] = {"                ", "Initializing... "};
@@ -67,11 +70,48 @@ typedef struct manager_s {
   char currentText[16];
   uint32_t mainCycleTimer;
   uint32_t btnStates;
-  uint8_t btnHoldCount[IO_BTN_COUNT];
+  uint16_t btnHoldCount[IO_BTN_COUNT];
   uint16_t expValues;
+  FBVMessage msgQueue[MSG_QUEUE_LEN];
+  uint8_t msgQueueWr;
+  uint8_t msgQueueRd;
 } Manager;
 
 static Manager mgr;
+
+static uint8_t _queue_len(void) {
+  if (mgr.msgQueueWr > mgr.msgQueueRd) {
+    return mgr.msgQueueWr - mgr.msgQueueRd;
+  } else {
+    return mgr.msgQueueRd - mgr.msgQueueWr;
+  }
+}
+
+static void _queue_in(FBVMessage msg) {
+  mgr.msgQueue[mgr.msgQueueWr] = msg;
+
+  if (mgr.msgQueueWr == (MSG_QUEUE_LEN - 1)) {
+    mgr.msgQueueWr = 0;
+  } else {
+    mgr.msgQueueWr++;
+  }
+}
+
+static uint8_t _queue_out(FBVMessage* msg) {
+  if (!msg) {
+    return 0;
+  }
+  if (_queue_len() == 0) {
+     return 0;
+  }
+  *msg = mgr.msgQueue[mgr.msgQueueRd];
+  if (mgr.msgQueueRd == (MSG_QUEUE_LEN - 1)) {
+    mgr.msgQueueRd = 0;
+  } else {
+    mgr.msgQueueRd++;
+  }
+  return 1;
+}
 
 static uint8_t _fbv_led_to_fx(FBVLED ledId) {
   switch (ledId) {
@@ -112,13 +152,16 @@ static uint8_t _fbv_led_to_internal(FBVLED ledId) {
 }
 
 static void _fbv_msg(FBVMessageType cmd, uint8_t paramSize, uint8_t* params) {
-  FBVMessage msg = {.msgType = cmd, .paramSize = paramSize};
+  FBVMessage msg;
   // use a trick here for easier handling
+  msg.msgType = cmd;
   if (paramSize == 1) {
     msg.params[0] = (uint8_t)((uint32_t)params);
+    msg.paramSize = 1;
   }
   else {
     memcpy(&msg.params, params, paramSize);
+    msg.paramSize = paramSize;
   }
   FBV_send_msg(&msg);
 }
@@ -187,7 +230,7 @@ static void _fbv_rx(FBVMessage msg) {
   if (msg.msgType == FBV_PING) {
     if (mgr.flags & FLAG_WAIT_POD) {
       // done waiting
-      _fbv_msg(FBV_ACK, 6, (uint8_t *)FBV_PINGBACK);
+      _fbv_msg(FBV_HNDSHAKE, 1, (uint8_t*)0x08);
       mgr.flags &= ~FLAG_WAIT_POD;
     } else {
 #ifdef POD_RESPOND_PINGS
@@ -195,13 +238,13 @@ static void _fbv_rx(FBVMessage msg) {
       _fbv_msg(FBV_ACK, 6, (uint8_t*)FBV_PINGBACK);
 #endif
     }
-      return;
+    return;
   }
 
   // receive and commit states
   if (msg.msgType == FBV_SET_LED) {
     // LEDs govern FX states
-    temp = _fbv_led_to_fx((FBVLED)msg.params[0]);
+    temp = _fbv_led_to_fx((FBVLED)(msg.params[0]));
     if (temp != POD_INVALID_FX) {
       if (_pod_fx_get_state(temp) != msg.params[1]) {
         // only emit state changes if state is actually different
@@ -209,7 +252,7 @@ static void _fbv_rx(FBVMessage msg) {
       }
     }
     else {
-      temp = _fbv_led_to_internal((FBVLED)msg.params[0]);
+      temp = _fbv_led_to_internal((FBVLED)(msg.params[0]));
       if (temp != LED_INVALID) {
         _set_led_state(temp, msg.params[1]);
       }
@@ -236,7 +279,7 @@ static void _fbv_rx(FBVMessage msg) {
   if (msg.msgType == FBV_SET_CH) {
     if (msg.params[0] != mgr.currentProgram[2]) {
       mgr.currentProgram[2] = msg.params[0];
-      mgr.flags |= (FLAG_DISPLAY_DIRTY | FLAG_PGM_UPDATE_1);
+      mgr.flags |= FLAG_PGM_UPDATE_1;
 #ifdef VIRTUAL_HW
       printf("VFBV: change channel to %c\n", mgr.currentProgram[2]);
 #endif
@@ -247,7 +290,7 @@ static void _fbv_rx(FBVMessage msg) {
   if (msg.msgType == FBV_SET_BNK1) {
     if (msg.params[0] != mgr.currentProgram[0]) {
       mgr.currentProgram[0] = msg.params[0];
-      mgr.flags |= (FLAG_DISPLAY_DIRTY | FLAG_PGM_UPDATE_2);
+      mgr.flags |= FLAG_PGM_UPDATE_2;
 #ifdef VIRTUAL_HW
       printf("VFBV: change prg digit 1 to '%c'\n", mgr.currentProgram[0]);
 #endif
@@ -258,7 +301,7 @@ static void _fbv_rx(FBVMessage msg) {
   if (msg.msgType == FBV_SET_BNK2) {
     if (msg.params[0] != mgr.currentProgram[1]) {
       mgr.currentProgram[1] = msg.params[0];
-      mgr.flags |= (FLAG_DISPLAY_DIRTY | FLAG_PGM_UPDATE_3);
+      mgr.flags |= FLAG_PGM_UPDATE_3;
 #ifdef VIRTUAL_HW
       printf("VFBV: change prg digit 2 to '%c'\n", mgr.currentProgram[1]);
 #endif
@@ -299,7 +342,7 @@ void MANAGER_initialize(void) {
   FBVStateMachineConfig fbvCfg;
 
   // setup
-  fbvCfg.msgRx = _fbv_rx;
+  fbvCfg.msgRx = _fbv_rx; //_queue_in;
   fbvCfg.msgTx = _fbv_tx;
   podCfg.msgTx = _pod_tx;
   podCfg.channel = POD_MIDI_CHANNEL;
@@ -312,10 +355,12 @@ void MANAGER_initialize(void) {
   mgr.otherLedState = 0;
   mgr.btnStates = 0;
   mgr.expValues = 0;
+  mgr.msgQueueRd = 0;
+  mgr.msgQueueWr = 0;
   memcpy(mgr.currentText, INITIAL_TEXT[1], 16);
   memset(mgr.currentProgram, 0x20, 3);
   memset(mgr.btnHoldCount, 0, IO_LED_COUNT);
-  mgr.flags = FLAG_WAIT_POD;
+  mgr.flags = FLAG_WAIT_POD|FLAG_FIRST_PING;
   _lcd_redraw();
 }
 
@@ -387,6 +432,7 @@ void MANAGER_cycle(void) {
   static uint32_t lastPing = 0;
   tick_t now = 0;
   uint32_t tmp = 0;
+  FBVMessage msg;
 
   // throttle main cycle
   now = TICK_get();
@@ -394,11 +440,17 @@ void MANAGER_cycle(void) {
     return;
   }
 
-  if (!(mgr.flags & FLAG_POD_ALIVE)) {
+  // process messages
+  while (_queue_out(&msg)) {
+    _fbv_rx(msg);
+  }
+
+  if (!(mgr.flags & FLAG_POD_ALIVE) || (mgr.flags & FLAG_FIRST_PING)) {
     // we just booted and haven't established that the POD is present yet,
     // so fire pings at it
     if (!lastPing) {
       _fbv_msg(FBV_PROBE, 1, (uint8_t*)0x00);
+      mgr.flags &= ~FLAG_FIRST_PING;
       lastPing = PROBE_INTERVAL_MULT;
     }
     else {
@@ -419,6 +471,7 @@ void MANAGER_cycle(void) {
     mgr.actualProgram = tmp;
     // clear flags
     mgr.flags &= ~(FLAG_PGM_UPDATE_1|FLAG_PGM_UPDATE_2|FLAG_PGM_UPDATE_3);
+    mgr.flags |= FLAG_DISPLAY_DIRTY;
   }
 
   // refresh led states

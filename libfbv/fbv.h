@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 // maximum parameter payload size
-#define MAX_PARAM_SIZE 18
+#define MAX_PARAM_SIZE 19
 
 // user readable flags
 #define FBV_FLAG_ERR 0x10
@@ -44,7 +44,7 @@ typedef enum fbv_led_type_e
 
 typedef struct fbv_message_s {
   FBVMessageType msgType;
-  uint8_t params[MAX_PARAM_SIZE];
+  uint8_t params[MAX_PARAM_SIZE+1];
   uint8_t paramSize;
 } FBVMessage;
 

@@ -13,6 +13,9 @@
 #include <libopencm3/stm32/usart.h>
 #endif
 
+static uint8_t debugBuffer[128];
+static uint8_t bufWrPtr = 0;
+
 int main(void) {
 
 #ifdef VIRTUAL_HW
@@ -47,12 +50,17 @@ int main(void) {
 
 #ifndef VIRTUAL_HW
 void usart1_isr(void) {
-
+  uint8_t data = 0;
   /* Check if we were called because of RXNE. */
   if (((USART_CR1(USART1) & USART_CR1_RXNEIE) != 0) &&
       ((USART_SR(USART1) & USART_SR_RXNE) != 0)) {
 
-    FBV_recv_byte(usart_recv(USART1));
+    data = usart_recv(USART1);
+    FBV_recv_byte(data);
+  }
+  if (((USART_CR1(USART1) & USART_CR1_TXEIE) != 0) &&
+      ((USART_SR(USART1) & USART_SR_TXE) != 0)) {
+    USART_CR1(USART1) &= ~USART_CR1_TXEIE;
   }
 }
 #endif

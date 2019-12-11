@@ -2102,4 +2102,6 @@ Wire Wire Line
 	8750 3700 8500 3700
 Text Label 8500 3700 0    50   ~ 0
 IOLED7
+Text Label 1550 4800 1    50   ~ 0
+SW1
 $EndSCHEMATC

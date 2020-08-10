@@ -13,8 +13,8 @@
 #include <libopencm3/stm32/usart.h>
 #endif
 
-static uint8_t debugBuffer[128];
-static uint8_t bufWrPtr = 0;
+// static uint8_t debugBuffer[128];
+// static uint8_t bufWrPtr = 0;
 
 int main(void) {
 

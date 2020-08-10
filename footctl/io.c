@@ -39,12 +39,12 @@ uint32_t BTNS_get_state(void) {
 }
 
 static uint32_t _read_btns(void) {
-  unsigned int i = 0;
-  uint32_t states = 0;
   // do something
 #ifdef VIRTUAL_HW
   return 0;
 #else
+  unsigned int i = 0;
+  uint32_t states = 0;
   for (i=0;i<CONFIG_BTN_COUNT;i++) {
     if (!gpio_get(BTN_PORTS[i], BTN_PINS[i])) {
       states |= (1<<i);
@@ -106,10 +106,10 @@ void EXP_cycle(void) {
 }
 
 void LEDS_set_state(uint32_t led_states) {
-  unsigned int i = 0;
 #ifdef VIRTUAL_HW
   // printf("SET LED STATES: %x\n", led_states);
 #else
+  unsigned int i = 0;
   for(i=0;i<CONFIG_LED_COUNT;i++) {
     if (led_states & (1<<i)) {
       gpio_set(LED_PORTS[i], LED_PINS[i]);

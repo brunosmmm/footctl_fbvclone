@@ -58,7 +58,9 @@ static const PODTogglableFX POD_FX_CONTROLS[POD_FX_COUNT] =
 
 #define MSG_QUEUE_LEN 8
 
+#ifdef POD_RESPOND_PINGS
 static const uint8_t FBV_PINGBACK[] = {0x00, 0x02, 0x00, 0x01, 0x01, 0x00};
+#endif
 static const char INITIAL_TEXT[2][16] = {"                ", "Initializing... "};
 
 typedef struct manager_s {
@@ -87,15 +89,15 @@ static uint8_t _queue_len(void) {
   }
 }
 
-static void _queue_in(FBVMessage msg) {
-  mgr.msgQueue[mgr.msgQueueWr] = msg;
+/* static void _queue_in(FBVMessage msg) { */
+/*   mgr.msgQueue[mgr.msgQueueWr] = msg; */
 
-  if (mgr.msgQueueWr == (MSG_QUEUE_LEN - 1)) {
-    mgr.msgQueueWr = 0;
-  } else {
-    mgr.msgQueueWr++;
-  }
-}
+/*   if (mgr.msgQueueWr == (MSG_QUEUE_LEN - 1)) { */
+/*     mgr.msgQueueWr = 0; */
+/*   } else { */
+/*     mgr.msgQueueWr++; */
+/*   } */
+/* } */
 
 static uint8_t _queue_out(FBVMessage* msg) {
   if (!msg) {
@@ -328,6 +330,7 @@ static void _pod_tx(uint8_t byte) {
 #endif
 }
 
+#ifndef VIRTUAL_HW
 static void _lcd_redraw(void) {
   LCDContents display;
 
@@ -336,6 +339,7 @@ static void _lcd_redraw(void) {
   memcpy((void *)display[1], mgr.currentText, LCD_COLS);
   LCD_draw(&display);
 }
+#endif
 
 void MANAGER_initialize(void) {
   PODStateMachineConfig podCfg;
@@ -361,7 +365,9 @@ void MANAGER_initialize(void) {
   memset(mgr.currentProgram, 0x20, 3);
   memset(mgr.btnHoldCount, 0, IO_LED_COUNT);
   mgr.flags = FLAG_WAIT_POD|FLAG_FIRST_PING;
+  #ifndef VIRTUAL_HW
   _lcd_redraw();
+  #endif
 }
 
 static inline void _refresh_leds(void) {
@@ -488,7 +494,9 @@ void MANAGER_cycle(void) {
   // trigger display redraw
   if ((mgr.flags & FLAG_DISPLAY_DIRTY) && !(mgr.flags & FLAG_WAIT_POD)) {
     // redraw
+    #ifndef VIRTUAL_HW
     _lcd_redraw();
+    #endif
     mgr.flags &= ~FLAG_DISPLAY_DIRTY;
   }
 

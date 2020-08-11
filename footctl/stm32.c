@@ -42,10 +42,11 @@ void SYSTEM_initialize(void) {
   // clock setup
 #ifdef STM32_MOCK
   rcc_clock_setup_in_hse_8mhz_out_72mhz();
+  systick_set_clocksource(STK_CSR_CLKSOURCE_AHB_DIV8);
 #else
   rcc_clock_setup_in_hsi_out_48mhz();
+  systick_set_clocksource(STK_CSR_CLKSOURCE_AHB);
 #endif
-  systick_set_clocksource(STK_CSR_CLKSOURCE_AHB_DIV8);
 #ifdef STM32_MOCK
   systick_set_reload(8999);
 #else
@@ -108,7 +109,6 @@ void SYSTEM_initialize(void) {
   INITIALIZE_OUTPUT_GPIO(GPIODEF_LCD_D7_PORT, GPIODEF_LCD_D7_PIN);
   INITIALIZE_OUTPUT_GPIO(GPIODEF_LCD_E_PORT, GPIODEF_LCD_E_PIN);
   INITIALIZE_OUTPUT_GPIO(GPIODEF_LCD_RS_PORT, GPIODEF_LCD_RS_PIN);
-  INITIALIZE_OUTPUT_GPIO(GPIODEF_LCD_RW_PORT, GPIODEF_LCD_RW_PIN);
 
   // LEDs
   INITIALIZE_LED_GPIO(0);
@@ -119,7 +119,6 @@ void SYSTEM_initialize(void) {
   INITIALIZE_LED_GPIO(5);
   INITIALIZE_LED_GPIO(6);
   INITIALIZE_LED_GPIO(7);
-  INITIALIZE_LED_GPIO(8);
 
   // Buttons
   INITIALIZE_BTN_GPIO(1);

@@ -26,11 +26,6 @@ typedef uint64_t tick_t;
 #define CONFIG_LED_COUNT 8
 #define CONFIG_BTN_COUNT 10
 
-#ifndef VIRTUAL_HW
-// mock hardware, development board
-#define STM32_MOCK
-#endif
-
 #ifdef STM32_MOCK
 // general definitions
 #define GPIOA_USED
@@ -49,8 +44,6 @@ typedef uint64_t tick_t;
 #define GPIODEF_LCD_E_PIN GPIO9
 #define GPIODEF_LCD_RS_PORT GPIOA
 #define GPIODEF_LCD_RS_PIN GPIO8
-#define GPIODEF_LCD_RW_PORT GPIOB
-#define GPIODEF_LCD_RW_PIN GPIO14
 //MIDI
 #define GPIODEF_MIDI_TX_PORT GPIOA
 #define GPIODEF_MIDI_TX_PIN GPIO2
@@ -76,8 +69,6 @@ typedef uint64_t tick_t;
 #define GPIODEF_LED6_PIN GPIO12
 #define GPIODEF_LED7_PORT GPIOB
 #define GPIODEF_LED7_PIN GPIO3
-#define GPIODEF_LED8_PORT GPIOB
-#define GPIODEF_LED8_PIN GPIO15
 
 //BTNS
 #define GPIODEF_BTN0_PORT GPIOB //IO8

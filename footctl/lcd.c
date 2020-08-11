@@ -43,54 +43,9 @@ inline static void _lcd_en(void) {
   _delay_ns(5000);
 }
 
-inline static void _lcd_read_mode(void) {
-#ifdef STM32_MOCK
-  gpio_set_mode(GPIODEF_LCD_D7_PORT, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT,
-                GPIODEF_LCD_D7_PIN);
-  gpio_set_mode(GPIODEF_LCD_D6_PORT, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT,
-                GPIODEF_LCD_D6_PIN);
-  gpio_set_mode(GPIODEF_LCD_D5_PORT, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT,
-                GPIODEF_LCD_D5_PIN);
-  gpio_set_mode(GPIODEF_LCD_D4_PORT, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT,
-                GPIODEF_LCD_D4_PIN);
-#endif
-  gpio_set(GPIODEF_LCD_RW_PORT, GPIODEF_LCD_RW_PIN);
-  _delay_ns(500);
-}
-
-inline static void _lcd_write_mode(void) {
-#ifdef STM32_MOCK
-  gpio_set_mode(GPIODEF_LCD_D7_PORT, GPIO_MODE_OUTPUT_50_MHZ,
-                GPIO_CNF_OUTPUT_PUSHPULL, GPIODEF_LCD_D7_PIN);
-  gpio_set_mode(GPIODEF_LCD_D6_PORT, GPIO_MODE_OUTPUT_50_MHZ,
-                GPIO_CNF_OUTPUT_PUSHPULL, GPIODEF_LCD_D6_PIN);
-  gpio_set_mode(GPIODEF_LCD_D5_PORT, GPIO_MODE_OUTPUT_50_MHZ,
-                GPIO_CNF_OUTPUT_PUSHPULL, GPIODEF_LCD_D5_PIN);
-  gpio_set_mode(GPIODEF_LCD_D4_PORT, GPIO_MODE_OUTPUT_50_MHZ,
-                GPIO_CNF_OUTPUT_PUSHPULL, GPIODEF_LCD_D4_PIN);
-#endif
-  gpio_clear(GPIODEF_LCD_RW_PORT, GPIODEF_LCD_RW_PIN);
-  _delay_ns(500);
-}
-
-inline static void _lcd_wait(void) {
-  uint8_t busy = 0;
-  _lcd_read_mode();
-  do {
-    gpio_set(GPIODEF_LCD_E_PORT, GPIODEF_LCD_E_PIN);
-    _delay_ns(500);
-    busy = gpio_get(GPIODEF_LCD_D7_PORT, GPIODEF_LCD_D7_PIN);
-    gpio_clear(GPIODEF_LCD_E_PORT, GPIODEF_LCD_E_PIN);
-    _lcd_en();
-  }
-  while (busy);
-  _lcd_write_mode();
-}
-
 static void _lcd_write(uint8_t data) {
   unsigned int i = 0;
   uint8_t _send = 0;
-  //_lcd_wait();
   _send = data >> 4;
   for (i=0; i<4;i++) {
     if (_send & (1<<i)) {
